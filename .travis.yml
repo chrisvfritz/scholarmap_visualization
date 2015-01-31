@@ -1,0 +1,22 @@
+language: ruby
+rvm:
+  - 2.2.0
+
+addons:
+  code_climate:
+    repo_token:
+      secure: ""
+
+bundler_args: --without development production
+
+script:
+  - bundle exec rspec
+
+deploy:
+  provider: heroku
+  api_key:
+    secure: ""
+  app:
+    master: scholarmap-visualization
+  on:
+    repo: chrisvfritz/scholarmap_visualization

@@ -1,0 +1,12 @@
+h1 ScholarMap API Docs
+
+.well
+
+  p This is the design documentation and mock for a hypothetical ScholarMap API, to be consumed by the frontend visualization. It is a work in progress, to document the expectations of the frontend visualization and to facilitate a discussion of its continued development.
+
+  - if locals[:endpoints].any?
+    ul
+      - locals[:endpoints].each do |endpoint|
+        li
+          a href="docs/#{endpoint}"
+            == "/api/v1/<strong>#{endpoint}</strong>/graphs/force-directed.json"

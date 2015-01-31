@@ -1,0 +1,60 @@
+{
+  "nodes": [
+    {
+      "name" : "Joshua Introne",
+      "department" : "Media and Information"
+    },
+    {
+      "name" : "Rick Wash",
+      "department" : "Media and Information"
+    },
+    {
+      "name" : "Johannes Bauer",
+      "department" : "Media and Information"
+    }
+  ],
+  "links": [
+    {
+      "source" : 1,
+      "target": 0,
+      "similarities" : [
+        {
+          "type" : "Methods",
+          "list" : [ "User-Centered Design" ]
+        }
+      ]
+    },
+    {
+      "source" : 2,
+      "target" : 0,
+      "similarities" : [
+        {
+          "type" : "Methods",
+          "list" : [ "Surveys", "Content Analysis" ]
+        },
+        {
+          "type" : "Fields",
+          "list" : [ "Design", "Information Sciences" ]
+        }
+      ]
+    },
+    {
+      "source" : 2,
+      "target" : 1,
+      "similarities" : [
+        {
+          "type" : "Methods",
+          "list" : [ "Ethnography/Fieldwork", "Content Analysis" ]
+        },
+        {
+          "type" : "Fields",
+          "list" : [ "Human Computer Interaction", "Design", "Information Sciences", "Health Informatics" ]
+        },
+        {
+          "type" : "Theories",
+          "list" : [ "Cognitive Anthropology", "Critical Theory", "Cognitive Artifacts" ]
+        }
+      ]
+    }
+  ]
+}

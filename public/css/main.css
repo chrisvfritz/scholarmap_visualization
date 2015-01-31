@@ -1,0 +1,115 @@
+/******
+ LAYOUT
+ ******/
+
+body {
+  padding: 0 300px;
+  position: relative;
+  background: white;
+  color: #555;
+}
+
+#left-sidebar, #right-sidebar {
+  width: 300px;
+  height: 100%;
+  min-height: 1px;
+  position: fixed;
+  top: 0;
+  background: #ecf0f1;
+}
+
+#left-sidebar  { left:  0; }
+#right-sidebar { right: 0; }
+
+.scroll-area {
+  height: 100%;
+  overflow-y: scroll;
+  padding: 20px;
+}
+
+#groups-legend {
+  display: inline-block;
+  margin-top: 20px;
+  text-align: left;
+}
+
+/***********
+ GENERAL VIZ
+ ***********/
+
+.node-group {
+  stroke-width: 70;
+  stroke-linejoin: round;
+  opacity: .15;
+  pointer-events: none
+}
+
+.node-background {
+  fill: white;
+}
+
+.node {
+  stroke: #fff;
+  stroke-width: 2px;
+  opacity: .8;
+  stroke-opacity: .8;
+  cursor: move;
+}
+
+.node:hover {
+  opacity: 1;
+}
+
+.visible-link {
+  stroke: #999;
+  stroke-opacity: .6;
+  pointer-events: none;
+}
+
+.visible-link.state-active {
+  stroke: #555;
+}
+
+.hover-link {
+  stroke: transparent;
+}
+
+/***********
+ D3 TOOLTIPS
+ ***********/
+
+.d3-tip {
+  max-width: 500px;
+  line-height: 1.5;
+  padding: 12px;
+  background: rgba(0, 0, 0, 0.8);
+  color: #fff;
+  border-radius: 2px;
+  pointer-events: none !important;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.d3-tip:after {
+  box-sizing: border-box;
+  display: inline;
+  font-size: 10px;
+  width: 100%;
+  line-height: 1;
+  color: rgba(0, 0, 0, 0.8);
+  content: "\25BC";
+  position: absolute;
+  text-align: center;
+  pointer-events: none !important;
+}
+
+/* Style northward tooltips differently */
+.d3-tip.n:after {
+  margin: -3px 0 0 0;
+  top: 100%;
+  left: 0;
+}
+
+.d3-tip-label {
+  font-weight: bold;
+  color: #9BC7F3;
+}

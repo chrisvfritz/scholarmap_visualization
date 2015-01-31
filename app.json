@@ -1,0 +1,14 @@
+{
+  "name": "ScholarMap Visualization",
+  "description": "Displays an interactive visaulization for the ScholarMap API",
+  "keywords": [
+    "data",
+    "academia",
+    "scholar",
+    "scholarship",
+    "research"
+  ],
+  "website": "http://cognosis.cas.msu.edu:8081/CSST15-0.1/",
+  "repository": "https://github.com/chrisvfritz/scholarmap_visualization",
+  "success_url": "/"
+}
