@@ -142,6 +142,16 @@ class ScholarMapViz.Map
             set_related_links_status d, 'inactive'
           .call @force.drag
 
+      node_binding_x = (d) =>
+        @node_binding_x_cache = @node_binding_x_cache || {}
+        return @node_binding_x_cache[d.x] if @node_binding_x_cache[d.x]
+        @node_binding_x_cache[d.x] = Math.max @node_size(d), Math.min(@width - @node_size(d), d.x)
+
+      node_binding_y = (d) =>
+        @node_binding_y_cache = @node_binding_y_cache || {}
+        return @node_binding_y_cache[d.y] if @node_binding_y_cache[d.y]
+        @node_binding_y_cache[d.y] = Math.max @node_size(d), Math.min(@height - @node_size(d), d.y)
+
       # groups nodes by the group_by function
       groups = d3.nest()
         .key @group_by
@@ -153,7 +163,7 @@ class ScholarMapViz.Map
 
       # calculates dimensions of hulls surrounding node groups
       group_path = (d) ->
-        "M#{ d3.geom.hull( d.values.map (i) -> [i.x, i.y] ).join 'L' }Z"
+        "M#{ d3.geom.hull( d.values.map (p) -> [node_binding_x(p), node_binding_y(p)] ).join 'L' }Z"
 
       # colors groups by their key
       group_fill = (d) => @color d.key
@@ -177,12 +187,6 @@ class ScholarMapViz.Map
 
       # constantly redraws the graph, with the following items
       @force.on 'tick', (e) =>
-
-        node_binding_x = (d) =>
-          Math.max @node_size(d), Math.min(@width -  @node_size(d), d.x)
-
-        node_binding_y = (d) =>
-          Math.max @node_size(d), Math.min(@height - @node_size(d), d.y)
 
         # the hulls surrounding node groups
         @svg.selectAll 'path'
@@ -237,8 +241,8 @@ class ScholarMapViz.Map
 
   # sizes nodes by combined link weights
   node_size: (d) =>
-    @cached_node_sizes = @cached_node_sizes || {}
-    return @cached_node_sizes[d.index] if @cached_node_sizes[d.index]
+    @node_size_cache = @node_size_cache || {}
+    return @node_size_cache[d.index] unless @node_size_cache[d.index] == undefined
 
     connected_links = @graph.links.filter (link) ->
       link.source.index == d.index || link.target.index == d.index
@@ -250,7 +254,7 @@ class ScholarMapViz.Map
     .reduce (a, b) =>
       a + b
 
-    @cached_node_sizes[d.index] = calculated_node_size
+    @node_size_cache[d.index] = calculated_node_size
 
   # returns all original node attributes (not including generated attributes)
   node_attributes: (nodes) ->
