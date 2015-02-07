@@ -41,13 +41,36 @@ class ScholarMapViz.Map
         if @group_by(d.source) == @group_by(d.target) then 1 else .05
       .charge (d) =>
         -9 * @node_size(d)
-      .gravity 0.02
+      .gravity 0.03
 
   # https://github.com/Caged/d3-tip/blob/master/docs/index.md#d3tip-api-documetation
   initialize_tooltips: ->
+    width  = @width
+    height = @height
+
+    node_tip_direction = (override_this) ->
+      element = if override_this instanceof SVGCircleElement then override_this else @
+      coords = d3.mouse(element)
+      upper = coords[1] < (0.5 * height)
+      left  = coords[0] < (0.25 * width)
+      right = coords[0] > (0.75 * width)
+      return 'se' if upper && left
+      return 'sw' if upper && right
+      return 's'  if upper
+      return 'nw' if right
+      return 'ne' if left
+      return 'n'
+
+    node_tip_offset = ->
+      direction = node_tip_direction(@)
+      return [-10, 0]  if direction == 'n' || direction == 'nw' || direction == 'ne'
+      return [10,  0]  if direction == 's' || direction == 'sw' || direction == 'se'
+
+
     @node_tip = d3.tip()
       .attr 'class', 'd3-tip'
-      .offset [-10, 0]
+      .direction node_tip_direction
+      .offset node_tip_offset
       .html @node_tip_html
 
     @link_tip = d3.tip()
@@ -81,7 +104,9 @@ class ScholarMapViz.Map
           .style 'stroke-width', (d) => d3.max [ 15, @link_width(d) ]
           .on 'mouseover', @link_tip.show
           .on 'mouseenter', (d) ->
-             set_link_status d, 'active'
+            setTimeout (->
+              set_link_status d, 'active'
+            ), 1
           .on 'mouseout', (d) =>
             @link_tip.hide()
             set_link_status d, 'inactive'
@@ -107,20 +132,12 @@ class ScholarMapViz.Map
           .attr 'class', 'node'
           .attr 'r', @node_size
           .style 'fill', (d) => @color @group_by(d)
-          .on 'mouseover', (d, i) =>
-            @node_tip.show d, i
-            connected_links = @graph.links.filter (link) ->
-              link.source.index == d.index || link.target.index == d.index
-            if connected_links.length > 0
-              for link in connected_links
-                set_link_status link, 'active'
+          .on 'mouseover', @node_tip.show
+          .on 'mouseenter', (d) ->
+            set_related_links_status d, 'active'
           .on 'mouseout', (d) =>
             @node_tip.hide()
-            connected_links = @graph.links.filter (link) ->
-              link.source.index == d.index || link.target.index == d.index
-            if connected_links.length > 0
-              for link in connected_links
-                set_link_status link, 'inactive'
+            set_related_links_status d, 'inactive'
           .call @force.drag
 
       # groups nodes by the group_by function
@@ -134,7 +151,7 @@ class ScholarMapViz.Map
 
       # calculates dimensions of hulls surrounding node groups
       group_path = (d) ->
-        "M#{ d3.geom.hull( d.values.map (i) -> [i.x, i.y] ).join('L') }Z"
+        "M#{ d3.geom.hull( d.values.map (i) -> [i.x, i.y] ).join 'L' }Z"
 
       # colors groups by their key
       group_fill = (d) => @color d.key
@@ -147,6 +164,14 @@ class ScholarMapViz.Map
         $active_link.attr 'class', $active_link.attr('class').replace(/(^|\s)state-\S+/g, '')
         # add a new state class
         $active_link.attr 'class', $active_link.attr('class') + " state-#{status}"
+
+      # sets a state-SOMETHING class on visible links related to a node
+      set_related_links_status = (d, status) =>
+        connected_links = @graph.links.filter (link) ->
+          link.source.index == d.index || link.target.index == d.index
+        if connected_links.length > 0
+          for link in connected_links
+            set_link_status link, status
 
       # constantly redraws the graph, with the following items
       @force.on 'tick', (e) =>
@@ -186,8 +211,8 @@ class ScholarMapViz.Map
 
         # the background of nodes (so that transparency doesn't reveal link tips)
         node_background
-          .attr 'cx', (d) -> d.x
-          .attr 'cy', (d) -> d.y
+          .attr 'cx', node_binding_x
+          .attr 'cy', node_binding_y
 
         # the nodes
         node
