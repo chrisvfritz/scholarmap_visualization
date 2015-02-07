@@ -237,15 +237,20 @@ class ScholarMapViz.Map
 
   # sizes nodes by combined link weights
   node_size: (d) =>
+    @cached_node_sizes = @cached_node_sizes || {}
+    return @cached_node_sizes[d.index] if @cached_node_sizes[d.index]
+
     connected_links = @graph.links.filter (link) ->
       link.source.index == d.index || link.target.index == d.index
 
     return 0 if connected_links.length == 0
 
-    connected_links.map (link) =>
+    calculated_node_size = connected_links.map (link) =>
       @link_weight(link)
     .reduce (a, b) =>
       a + b
+
+    @cached_node_sizes[d.index] = calculated_node_size
 
   # returns all original node attributes (not including generated attributes)
   node_attributes: (nodes) ->
