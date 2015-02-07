@@ -58,7 +58,7 @@ private
         {
           citation: (100..300).map { (65 + rand(26)).chr }.join,
           year: YEARS.sample,
-          authors: [ (5..20).map { (65 + rand(26)).chr }.join ],
+          authors: Array.new(rand(10)).map { (5..20).map { (65 + rand(26)).chr }.join },
           department: DEPARTMENTS.sample
         }
       end

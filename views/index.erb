@@ -2,18 +2,20 @@
 
   <div class="scroll-area">
 
-    <div class="btn-group" role="group" aria-label="Data Type">
-      <button type="button" class="btn btn-default" id="people-button">People</button>
-      <button type="button" class="btn btn-default" id="references-button">References</button>
-      <button type="button" class="btn btn-default" id="characteristics-button">Characteristics</button>
+    <div class="btn-group" role="group" id="map-types" aria-label="Map Type">
+      <button type="button" class="btn btn-default" data-map-type="PeopleMap">People</button>
+      <button type="button" class="btn btn-default" data-map-type="ReferencesMap">References</button>
+      <button type="button" class="btn btn-default" data-map-type="CharacteristicsMap">Characteristics</button>
     </div>
 
     <h2 class="h3 text-center">Link by</h2>
 
-    <button class="btn btn-default btn-block active checkbox">Fields</button>
-    <button class="btn btn-default btn-block active checkbox">Methods</button>
-    <button class="btn btn-default btn-block active checkbox">Theories</button>
-    <button class="btn btn-default btn-block active checkbox">Venues</button>
+    <div class="btn-group" role="group" id="similarity-types" aria-label="Link by">
+      <button class="btn btn-default btn-block active checkbox">Fields</button>
+      <button class="btn btn-default btn-block active checkbox">Methods</button>
+      <button class="btn btn-default btn-block active checkbox">Theories</button>
+      <button class="btn btn-default btn-block active checkbox">Venues</button>
+    </div>
 
   </div>
 
@@ -21,7 +23,7 @@
 
 <div id="visualization"></div>
 
-<div id="right-sidebar">
+<!-- <div id="right-sidebar">
   <div class="scroll-area">
   </div>
-</div>
+</div> -->

@@ -40,7 +40,7 @@ class ScholarMapViz.Map
       .linkStrength (d) =>
         if @group_by(d.source) == @group_by(d.target) then 1 else .05
       .charge (d) =>
-        -2 ** d.weight
+        -9 * @node_size(d)
       .gravity 0.02
 
   # https://github.com/Caged/d3-tip/blob/master/docs/index.md#d3tip-api-documetation
@@ -79,6 +79,12 @@ class ScholarMapViz.Map
         .enter().append 'line'
           .attr 'class', 'hover-link'
           .style 'stroke-width', (d) => d3.max [ 15, @link_width(d) ]
+          .on 'mouseover', @link_tip.show
+          .on 'mouseenter', (d) ->
+             set_link_status d, 'active'
+          .on 'mouseout', (d) =>
+            @link_tip.hide()
+            set_link_status d, 'inactive'
 
       # sets up link styles
       visible_link = @svg.selectAll '.visible-link'
@@ -101,8 +107,20 @@ class ScholarMapViz.Map
           .attr 'class', 'node'
           .attr 'r', @node_size
           .style 'fill', (d) => @color @group_by(d)
-          .on 'mouseover', @node_tip.show
-          .on 'mouseout',  @node_tip.hide
+          .on 'mouseover', (d, i) =>
+            @node_tip.show d, i
+            connected_links = @graph.links.filter (link) ->
+              link.source.index == d.index || link.target.index == d.index
+            if connected_links.length > 0
+              for link in connected_links
+                set_link_status link, 'active'
+          .on 'mouseout', (d) =>
+            @node_tip.hide()
+            connected_links = @graph.links.filter (link) ->
+              link.source.index == d.index || link.target.index == d.index
+            if connected_links.length > 0
+              for link in connected_links
+                set_link_status link, 'inactive'
           .call @force.drag
 
       # groups nodes by the group_by function
@@ -157,12 +175,6 @@ class ScholarMapViz.Map
           .attr 'y1', (d) -> node_binding_y d.source
           .attr 'x2', (d) -> node_binding_x d.target
           .attr 'y2', (d) -> node_binding_y d.target
-          .on 'mouseover', @link_tip.show
-          .on 'mouseenter', (d) ->
-             set_link_status d, 'active'
-          .on 'mouseout', (d) =>
-            @link_tip.hide()
-            set_link_status d, 'inactive'
 
         # the links that users see between nodes
         visible_link
@@ -195,6 +207,18 @@ class ScholarMapViz.Map
   # groups by Louvain communities
   group_by: (d) =>
     @louvain_communities()[d.index]
+
+  # sizes nodes by combined link weights
+  node_size: (d) =>
+    connected_links = @graph.links.filter (link) ->
+      link.source.index == d.index || link.target.index == d.index
+
+    return 0 if connected_links.length == 0
+
+    connected_links.map (link) =>
+      @link_weight(link)
+    .reduce (a, b) =>
+      a + b
 
   # returns all original node attributes (not including generated attributes)
   node_attributes: (nodes) ->
@@ -232,10 +256,6 @@ class ScholarMapViz.PeopleMap extends ScholarMapViz.Map
   node_tip_html: (d) ->
     d.name
 
-  # constant node size of 20
-  node_size: (d) ->
-    5
-
 
 class ScholarMapViz.ReferencesMap extends ScholarMapViz.Map
 
@@ -262,20 +282,13 @@ class ScholarMapViz.CharacteristicsMap extends ScholarMapViz.Map
   node_tip_html: (d) ->
     d.name
 
-  # node size depends on the number of authors for the reference
-  node_size: (d) ->
-    10
-
 
 class ScholarMapViz.DataToggle
 
   constructor:  ->
-    $('#people-button').on 'click', ->
-      choose_data $(@), -> new ScholarMapViz.PeopleMap
-    $('#references-button').on 'click', ->
-      choose_data $(@), -> new ScholarMapViz.ReferencesMap
-    $('#characteristics-button').on 'click', ->
-      choose_data $(@), -> new ScholarMapViz.CharacteristicsMap
+    $('#map-types').on 'click', 'button', ->
+      $current_button = $(@)
+      choose_data $current_button, -> new ScholarMapViz[$current_button.data('map-type')]
 
   choose_data = ($current, activation_callback) ->
     unless $current.hasClass 'active'
@@ -299,7 +312,7 @@ class ScholarMapViz.Initializer
 
   fetch_default_data: ->
     new ScholarMapViz.PeopleMap
-    $('#people-button').addClass 'active'
+    $('#map-types').find('button[data-map-type="PeopleMap"]').addClass 'active'
 
 
 $ ->
