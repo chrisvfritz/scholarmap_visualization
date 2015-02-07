@@ -3,14 +3,13 @@
  ******/
 
 body {
-  padding: 0 300px;
+  padding: 0 0 0 350px;
   position: relative;
   background: white;
   color: #555;
 }
 
 #left-sidebar, #right-sidebar {
-  width: 300px;
   height: 100%;
   min-height: 1px;
   position: fixed;
@@ -18,8 +17,8 @@ body {
   background: #ecf0f1;
 }
 
-#left-sidebar  { left:  0; }
-#right-sidebar { right: 0; }
+#left-sidebar  { left:  0; width: 350px; }
+#right-sidebar { right: 0; width: 0; }
 
 .scroll-area {
   height: 100%;
@@ -86,6 +85,7 @@ body {
   color: #fff;
   border-radius: 2px;
   pointer-events: none !important;
+  white-space: break-word;
 }
 
 /* Creates a small triangle extender for the tooltip */

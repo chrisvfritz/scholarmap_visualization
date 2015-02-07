@@ -31,11 +31,16 @@ class ScholarMapViz.Map
   initialize_force_layout: ->
     @force = d3.layout.force()
       .size [@width, @height]
-      .linkDistance 100
+      .linkDistance (d) =>
+        base     = 150
+        grouping = if @group_by(d.source) == @group_by(d.target) then 40 else 0
+        weight   = @link_weight(d) * 10
+        base - grouping - weight
       .linkStrength (d) =>
-        if @group_by(d.source) == @group_by(d.target) then 1 else .25
-      .charge -300
-      .gravity .02
+        if @group_by(d.source) == @group_by(d.target) then 1 else .05
+      .charge (d) =>
+        -2 ** d.weight
+      .gravity 0.02
 
   # https://github.com/Caged/d3-tip/blob/master/docs/index.md#d3tip-api-documetation
   initialize_tooltips: ->
@@ -55,41 +60,40 @@ class ScholarMapViz.Map
   get_data: ->
 
     # fetch data of the appropriate type from the API
-    d3.json "/api/v1/#{@type}/graphs/force-directed.json", (error, graph) =>
+    d3.json "/api/v1/#{@type}/graphs/force-directed.json?#{window.location.search.substring(1)}", (error, graph) =>
+
+      @graph = graph
 
       # sets up the force layout with our API data
       @force
-        .nodes graph.nodes
-        .links graph.links
+        .nodes @graph.nodes
+        .links @graph.links
         .start()
-
-      # sets up the grouping controls for the graph nodes
-      @initialize_grouping_controls graph.nodes
 
       # sets up link hover area, with a minimum stroke-width
       hover_link = @svg.selectAll '.hover-link'
-        .data graph.links
+        .data @graph.links
         .enter().append 'line'
           .attr 'class', 'hover-link'
-          .style 'stroke-width', (d) => d3.max [ 25, @link_width(d) ]
+          .style 'stroke-width', (d) => d3.max [ 15, @link_width(d) ]
 
       # sets up link styles
       visible_link = @svg.selectAll '.visible-link'
-        .data graph.links
+        .data @graph.links
         .enter().append 'line'
           .attr 'class', 'visible-link'
           .style 'stroke-width', @link_width
 
       # sets up node background, so that transparency doesn't reveal link tips
       node_background = @svg.selectAll '.node-background'
-        .data graph.nodes
+        .data @graph.nodes
         .enter().append 'circle'
           .attr 'class', 'node-background'
           .attr 'r', @node_size
 
       # sets up node style and behavior
       node = @svg.selectAll '.node'
-        .data graph.nodes
+        .data @graph.nodes
         .enter().append 'circle'
           .attr 'class', 'node'
           .attr 'r', @node_size
@@ -101,13 +105,11 @@ class ScholarMapViz.Map
       # groups nodes by the group_by function
       groups = d3.nest()
         .key @group_by
-        .entries graph.nodes
+        .entries @graph.nodes
 
-      @draw_groups_legend groups
-
-      # removes any groups with only a single node
+      # removes any groups with only a one or two nodes
       groups = groups.filter (group) ->
-        group.values.length > 1
+        group.values.length > 2
 
       # calculates dimensions of hulls surrounding node groups
       group_path = (d) ->
@@ -126,7 +128,13 @@ class ScholarMapViz.Map
         $active_link.attr 'class', $active_link.attr('class') + " state-#{status}"
 
       # constantly redraws the graph, with the following items
-      @force.on 'tick', =>
+      @force.on 'tick', (e) =>
+
+        node_binding_x = (d) =>
+          Math.max @node_size(d), Math.min(@width -  @node_size(d), d.x)
+
+        node_binding_y = (d) =>
+          Math.max @node_size(d), Math.min(@height - @node_size(d), d.y)
 
         # the hulls surrounding node groups
         @svg.selectAll 'path'
@@ -142,10 +150,10 @@ class ScholarMapViz.Map
 
         # the hover areas around links to show tooltips
         hover_link
-          .attr 'x1', (d) -> d.source.x
-          .attr 'y1', (d) -> d.source.y
-          .attr 'x2', (d) -> d.target.x
-          .attr 'y2', (d) -> d.target.y
+          .attr 'x1', (d) -> node_binding_x d.source
+          .attr 'y1', (d) -> node_binding_y d.source
+          .attr 'x2', (d) -> node_binding_x d.target
+          .attr 'y2', (d) -> node_binding_y d.target
           .on 'mouseover', @link_tip.show
           .on 'mouseenter', (d) ->
              set_link_status d, 'active'
@@ -155,10 +163,10 @@ class ScholarMapViz.Map
 
         # the links that users see between nodes
         visible_link
-          .attr 'x1', (d) -> d.source.x
-          .attr 'y1', (d) -> d.source.y
-          .attr 'x2', (d) -> d.target.x
-          .attr 'y2', (d) -> d.target.y
+          .attr 'x1', (d) -> node_binding_x d.source
+          .attr 'y1', (d) -> node_binding_y d.source
+          .attr 'x2', (d) -> node_binding_x d.target
+          .attr 'y2', (d) -> node_binding_y d.target
           .attr 'data-id', (d) -> "#{d.source.index}->#{d.target.index}"
 
         # the background of nodes (so that transparency doesn't reveal link tips)
@@ -168,65 +176,22 @@ class ScholarMapViz.Map
 
         # the nodes
         node
-          .attr 'cx', (d) -> d.x
-          .attr 'cy', (d) -> d.y
+          .attr 'cx', node_binding_x
+          .attr 'cy', node_binding_y
 
-  # draws the legend for hull groupings
-  draw_groups_legend: (groups) ->
-    ScholarMapViz.$groups_legend.html ''
-    for group in groups
-      ScholarMapViz.$groups_legend.append(
-        """
-        <p>
-          <span style="color: #{@color group.key};">█</span>
-          #{group.key}
-        </p>
-        """
-      )
+  # calculates communities with the Louvain algorithm
+  louvain_communities: ->
+    louvain_nodes = [0..@graph.nodes.length]
+    louvain_edges = @graph.links.map (link) =>
+      source: link.source.index,
+      target: link.target.index,
+      weight: @link_weight(link)
+    communities = jLouvain().nodes(louvain_nodes).edges(louvain_edges)()
+    @louvain_communities = -> communities
 
-  # sets up the grouping controls, pulling in node attributes
-  initialize_grouping_controls: (nodes) ->
-    # erases any previous grouping controls
-    ScholarMapViz.$grouping_controls.html ''
-
-    # adds the "Group by" heading
-    ScholarMapViz.$grouping_controls.append "<h2 class=\"h3\">Group by</h2>"
-
-    # for all attributes not blacklisted for grouping, create a button to group by
-    for attribute in @node_attributes(nodes)
-      unless attribute in @ungroupable_attributes
-        ScholarMapViz.$grouping_controls.append(
-          """
-            <button class="btn btn-default btn-block #{'active' if attribute == @grouping}" data-attribute-name="#{attribute}">
-              #{attribute[0].toUpperCase() + attribute[1..attribute.length - 1].toLowerCase()}
-            </button>
-          """
-        )
-
-    update_group_by = @update_group_by
-
-    $grouping_buttons = ScholarMapViz.$grouping_controls.find('button')
-
-    # when a grouping button is clicked on, we should group data by that attribute
-    $grouping_buttons.on 'click', ->
-      $current_button = $(@)
-      unless $current_button.hasClass 'active'
-        $grouping_buttons.removeClass 'active'
-        update_group_by $current_button.data('attribute-name')
-        $current_button.addClass 'active'
-
-  # updates the node grouping
-  update_group_by: (new_grouping_attribute) =>
-    @force.stop()
-    @grouping = new_grouping_attribute
-    @draw()
-
-  # returns the value of the grouping attribute
+  # groups by Louvain communities
   group_by: (d) =>
-    if d[@grouping] instanceof Array
-      d[@grouping].sort().join ', '
-    else
-      d[@grouping]
+    @louvain_communities()[d.index]
 
   # returns all original node attributes (not including generated attributes)
   node_attributes: (nodes) ->
@@ -237,13 +202,15 @@ class ScholarMapViz.Map
 
   # link tooltips list node similarities by type
   link_tip_html: (d) ->
-    d.similarities.map (similarity) ->
+    d.similarities.filter (similarity) ->
+      similarity.list.length > 0
+    .map (similarity) ->
       "<span class=\"d3-tip-label\">#{similarity.type}:</span> #{similarity.list.join(', ')}"
     .join '<br>'
 
   # link weight is determined by number of similarities between nodes
   link_weight: (d) ->
-    test = d.similarities.map (similarity) ->
+    d.similarities.map (similarity) ->
       similarity.list.length
     .reduce (a, b) ->
       a + b
@@ -252,13 +219,10 @@ class ScholarMapViz.Map
   link_width: (d) =>
     Math.log( d3.max([2, @link_weight(d)]) ) * 5
 
-
 class ScholarMapViz.PeopleMap extends ScholarMapViz.Map
 
   constructor: ->
     @type = 'people'
-    @grouping = 'department'
-    @ungroupable_attributes = ['name']
     super
 
   # node tooltips should display people's name
@@ -267,15 +231,13 @@ class ScholarMapViz.PeopleMap extends ScholarMapViz.Map
 
   # constant node size of 20
   node_size: (d) ->
-    20
+    5
 
 
 class ScholarMapViz.ReferencesMap extends ScholarMapViz.Map
 
   constructor: ->
     @type = 'references'
-    @grouping = 'department'
-    @ungroupable_attributes = ['citation', 'year']
     super
 
   # node tooltips shuold display the reference citation, cutting it off it it's longer than 150 characters
@@ -287,6 +249,21 @@ class ScholarMapViz.ReferencesMap extends ScholarMapViz.Map
     d3.max [10, Math.log( d.authors.length + 1 ) * 10]
 
 
+class ScholarMapViz.CharacteristicsMap extends ScholarMapViz.Map
+
+  constructor: ->
+    @type = 'characteristics'
+    super
+
+  # node tooltips shuold display the reference citation, cutting it off it it's longer than 150 characters
+  node_tip_html: (d) ->
+    d.name
+
+  # node size depends on the number of authors for the reference
+  node_size: (d) ->
+    10
+
+
 class ScholarMapViz.DataToggle
 
   constructor:  ->
@@ -294,6 +271,8 @@ class ScholarMapViz.DataToggle
       choose_data $(@), -> new ScholarMapViz.PeopleMap
     $('#references-button').on 'click', ->
       choose_data $(@), -> new ScholarMapViz.ReferencesMap
+    $('#characteristics-button').on 'click', ->
+      choose_data $(@), -> new ScholarMapViz.CharacteristicsMap
 
   choose_data = ($current, activation_callback) ->
     unless $current.hasClass 'active'
@@ -314,9 +293,6 @@ class ScholarMapViz.Initializer
 
     ScholarMapViz.container  = '#visualization'
     ScholarMapViz.$container = $(ScholarMapViz.container)
-
-    ScholarMapViz.$groups_legend     = $('#groups-legend')
-    ScholarMapViz.$grouping_controls = $('#grouping-controls')
 
   fetch_default_data: ->
     new ScholarMapViz.PeopleMap

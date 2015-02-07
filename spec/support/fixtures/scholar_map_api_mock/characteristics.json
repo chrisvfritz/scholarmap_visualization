@@ -1,0 +1,24 @@
+{
+  "nodes" : [
+    {
+      "name" : "Surveys",
+      "type" : "Method"
+    },
+    {
+      "name" : "Design",
+      "type" : "Field"
+    }
+  ],
+  "links" : [
+    {
+      "source" : 1,
+      "target": 0,
+      "similarities" : [
+        {
+          "type" : "People",
+          "list" : [ "Josh Introne", "Rick Wash" ]
+        }
+      ]
+    }
+  ]
+}
