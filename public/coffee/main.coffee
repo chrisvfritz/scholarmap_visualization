@@ -12,6 +12,7 @@ class ScholarMapViz.Map
     @set_colors()
     @initialize_force_layout()
     @initialize_tooltips()
+    ScholarMapViz.$container.fadeOut 0
     @get_data()
 
   # sets up the SVG to fill its container
@@ -61,6 +62,8 @@ class ScholarMapViz.Map
 
     # fetch data of the appropriate type from the API
     d3.json "/api/v1/#{@type}/graphs/force-directed.json?#{window.location.search.substring(1)}", (error, graph) =>
+
+      ScholarMapViz.$container.fadeIn 500
 
       @graph = graph
 
