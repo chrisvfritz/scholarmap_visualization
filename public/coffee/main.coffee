@@ -90,6 +90,8 @@ class ScholarMapViz.Map
 
       @graph = graph
 
+      @draw_link_by_buttons @graph.links
+
       # sets up the force layout with our API data
       @force
         .nodes @graph.nodes
@@ -270,6 +272,22 @@ class ScholarMapViz.Map
   # link width is a modified log of the calculated link weight
   link_width: (d) =>
     Math.log( d3.max([2, @link_weight(d)]) ) * 5
+
+  draw_link_by_buttons: (links) ->
+    similarity_types = []
+    for link in links
+      for similarity in link.similarities
+        similarity_types.push(similarity.type) unless similarity_types.indexOf(similarity.type) > -1
+
+    $similarity_types_container = $('#similarity-types')
+
+    $similarity_types_container.html ''
+
+    for type in similarity_types
+      $similarity_types_container.append """
+        <button class="btn btn-default btn-block active" data-similarity-type="#{type}">#{type}</button>
+      """
+
 
 class ScholarMapViz.PeopleMap extends ScholarMapViz.Map
 
