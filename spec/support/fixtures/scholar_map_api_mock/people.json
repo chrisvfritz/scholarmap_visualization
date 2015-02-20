@@ -2,15 +2,18 @@
   "nodes": [
     {
       "name" : "Joshua Introne",
-      "department" : "Media and Information"
+      "department" : "Media and Information",
+      "relative_url" : "/example/relative/url"
     },
     {
       "name" : "Rick Wash",
-      "department" : "Media and Information"
+      "department" : "Media and Information",
+      "relative_url" : "/example/relative/url"
     },
     {
       "name" : "Johannes Bauer",
-      "department" : "Media and Information"
+      "department" : "Media and Information",
+      "relative_url" : "/example/relative/url"
     }
   ],
   "links": [

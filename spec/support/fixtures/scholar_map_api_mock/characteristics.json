@@ -2,11 +2,13 @@
   "nodes" : [
     {
       "name" : "Surveys",
-      "type" : "Method"
+      "type" : "Method",
+      "relative_url" : "/example/relative/url"
     },
     {
       "name" : "Design",
-      "type" : "Field"
+      "type" : "Field",
+      "relative_url" : "/example/relative/url"
     }
   ],
   "links" : [
@@ -17,6 +19,10 @@
         {
           "type" : "People",
           "list" : [ "Josh Introne", "Rick Wash" ]
+        },
+        {
+          "type" : "References",
+          "list" : [ "Axelrod, R.M. Structure of decision: The cognitive maps of political elites. Princeton University Press, 1976." ]
         }
       ]
     }
