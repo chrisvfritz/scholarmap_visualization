@@ -3,61 +3,56 @@
     {
       "name" : "Joshua Introne",
       "department" : "Media and Information",
-      "relative_url" : "/example/relative/url"
+      "relative_url" : "/example/relative/url",
+      "methods" : [ 56893 ],
+      "theories" : [ 82346, 23469, 34637 ]
     },
     {
       "name" : "Rick Wash",
       "department" : "Media and Information",
-      "relative_url" : "/example/relative/url"
-    },
-    {
-      "name" : "Johannes Bauer",
-      "department" : "Media and Information",
-      "relative_url" : "/example/relative/url"
+      "relative_url" : "/example/relative/url",
+      "methods" : [ 56893 ],
+      "fields" : [ 32659, 23488, 38469, 53986 ]
     }
   ],
-  "links": [
-    {
-      "source" : 1,
-      "target": 0,
-      "similarities" : [
-        {
-          "type" : "Methods",
-          "list" : [ "User-Centered Design" ]
-        }
-      ]
+  "attributes" : {
+    "methods" : {
+      "56893" : {
+        "name" : "User-Centered Design",
+        "relative_url" : "/example/relative/url"
+      }
     },
-    {
-      "source" : 2,
-      "target" : 0,
-      "similarities" : [
-        {
-          "type" : "Methods",
-          "list" : [ "Surveys", "Content Analysis" ]
-        },
-        {
-          "type" : "Fields",
-          "list" : [ "Design", "Information Sciences" ]
-        }
-      ]
+    "theories" : {
+      "82346" : {
+        "name" : "Cognitive Anthropology",
+        "relative_url" : "/example/relative/url"
+      },
+      "23469" : {
+        "name" : "Critical Theory",
+        "relative_url" : "/example/relative/url"
+      },
+      "34637" : {
+        "name" : "Cognitive Artifacts",
+        "relative_url" : "/example/relative/url"
+      }
     },
-    {
-      "source" : 2,
-      "target" : 1,
-      "similarities" : [
-        {
-          "type" : "Methods",
-          "list" : [ "Ethnography/Fieldwork", "Content Analysis" ]
-        },
-        {
-          "type" : "Fields",
-          "list" : [ "Human Computer Interaction", "Design", "Information Sciences", "Health Informatics" ]
-        },
-        {
-          "type" : "Theories",
-          "list" : [ "Cognitive Anthropology", "Critical Theory", "Cognitive Artifacts" ]
-        }
-      ]
+    "fields" : {
+      "32659" : {
+        "name" : "Human Computer Interaction",
+        "relative_url" : "/example/relative/url"
+      },
+      "23488" : {
+        "name" : "Design",
+        "relative_url" : "/example/relative/url"
+      },
+      "38469" : {
+        "name" : "Information Sciences",
+        "relative_url" : "/example/relative/url"
+      },
+      "53986" : {
+        "name" : "Health Informatics",
+        "relative_url" : "/example/relative/url"
+      }
     }
-  ]
+  }
 }

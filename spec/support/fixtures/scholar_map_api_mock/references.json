@@ -5,254 +5,98 @@
       "year" : 2001,
       "authors" : [ "Ahuvia" ],
       "department" : "Media and Information",
-      "relative_url" : "/example/relative/url"
+      "relative_url" : "/example/relative/url",
+      "methods" : [
+        {
+          "id" : 56893,
+          "weight" : 26
+        }
+      ],
+      "theories" : [
+        {
+          "id": 82346,
+          "weight" : 30
+        },
+        {
+          "id": 23469,
+          "weight" : 84
+        },
+        {
+          "id": 34637,
+          "weight" : 63
+        }
+      ]
     },
     {
       "citation" : "Atkins, D.E., Droegemeier, K.K., Feldman, S.I., Garcia-Molina, H., Klein, M.L., Messerschmitt, D.G., Messina, P., Ostriker, J.P., and Wright, M.H., 2003. Revolutionizing Science and Engineering Through Cyberinfrastructure: Report of the NSF Blue-Ribbon Advisory Panel on cyberinfrastructure. Science 81, 8, 1562-1567.",
       "year" : 2003,
       "authors" : [ "Atkins", "Droegemeier", "Feldman", "Garcia-Molina", "Klein", "Messerschmitt", "Messina", "Ostriker", "Wright" ],
       "department" : "Computer Science and Engineering",
-      "relative_url" : "/example/relative/url"
-    },
-    {
-      "citation" : "Axelrod, R.M. Structure of decision: The cognitive maps of political elites. Princeton University Press, 1976.",
-      "year" : 1976,
-      "authors" : [ "Axelrod" ],
-      "department" : "Media and Information",
-      "relative_url" : "/example/relative/url"
-    },
-    {
-      "citation" : "Ahuvia, A. (2001). Traditional, interpretive, and reception based content analyses: Improving the ability of content analysis to address issues of pragmatic and theoretical concern. Social Indicators Research, 54(2), 139–172. doi:10.1023/A:1011087813505",
-      "year" : 2001,
-      "authors" : [ "Ahuvia" ],
-      "department" : "Media and Information",
-      "relative_url" : "/example/relative/url"
-    },
-    {
-      "citation" : "Atkins, D.E., Droegemeier, K.K., Feldman, S.I., Garcia-Molina, H., Klein, M.L., Messerschmitt, D.G., Messina, P., Ostriker, J.P., and Wright, M.H., 2003. Revolutionizing Science and Engineering Through Cyberinfrastructure: Report of the NSF Blue-Ribbon Advisory Panel on cyberinfrastructure. Science 81, 8, 1562-1567.",
-      "year" : 2003,
-      "authors" : [ "Atkins", "Droegemeier", "Feldman", "Garcia-Molina", "Klein", "Messerschmitt", "Messina", "Ostriker", "Wright" ],
-      "department" : "Computer Science and Engineering",
-      "relative_url" : "/example/relative/url"
-    },
-    {
-      "citation" : "Axelrod, R.M. Structure of decision: The cognitive maps of political elites. Princeton University Press, 1976.",
-      "year" : 1976,
-      "authors" : [ "Axelrod" ],
-      "department" : "Media and Information",
-      "relative_url" : "/example/relative/url"
-    },
-    {
-      "citation" : "Ahuvia, A. (2001). Traditional, interpretive, and reception based content analyses: Improving the ability of content analysis to address issues of pragmatic and theoretical concern. Social Indicators Research, 54(2), 139–172. doi:10.1023/A:1011087813505",
-      "year" : 2001,
-      "authors" : [ "Ahuvia" ],
-      "department" : "Media and Information",
-      "relative_url" : "/example/relative/url"
-    },
-    {
-      "citation" : "Atkins, D.E., Droegemeier, K.K., Feldman, S.I., Garcia-Molina, H., Klein, M.L., Messerschmitt, D.G., Messina, P., Ostriker, J.P., and Wright, M.H., 2003. Revolutionizing Science and Engineering Through Cyberinfrastructure: Report of the NSF Blue-Ribbon Advisory Panel on cyberinfrastructure. Science 81, 8, 1562-1567.",
-      "year" : 2003,
-      "authors" : [ "Atkins", "Droegemeier", "Feldman", "Garcia-Molina", "Klein", "Messerschmitt", "Messina", "Ostriker", "Wright" ],
-      "department" : "Computer Science and Engineering",
-      "relative_url" : "/example/relative/url"
-    },
-    {
-      "citation" : "Axelrod, R.M. Structure of decision: The cognitive maps of political elites. Princeton University Press, 1976.",
-      "year" : 1976,
-      "authors" : [ "Axelrod" ],
-      "department" : "Media and Information",
-      "relative_url" : "/example/relative/url"
-    },
-    {
-      "citation" : "Ahuvia, A. (2001). Traditional, interpretive, and reception based content analyses: Improving the ability of content analysis to address issues of pragmatic and theoretical concern. Social Indicators Research, 54(2), 139–172. doi:10.1023/A:1011087813505",
-      "year" : 2001,
-      "authors" : [ "Ahuvia" ],
-      "department" : "Media and Information",
-      "relative_url" : "/example/relative/url"
-    },
-    {
-      "citation" : "Atkins, D.E., Droegemeier, K.K., Feldman, S.I., Garcia-Molina, H., Klein, M.L., Messerschmitt, D.G., Messina, P., Ostriker, J.P., and Wright, M.H., 2003. Revolutionizing Science and Engineering Through Cyberinfrastructure: Report of the NSF Blue-Ribbon Advisory Panel on cyberinfrastructure. Science 81, 8, 1562-1567.",
-      "year" : 2003,
-      "authors" : [ "Atkins", "Droegemeier", "Feldman", "Garcia-Molina", "Klein", "Messerschmitt", "Messina", "Ostriker", "Wright" ],
-      "department" : "Computer Science and Engineering",
-      "relative_url" : "/example/relative/url"
-    },
-    {
-      "citation" : "Axelrod, R.M. Structure of decision: The cognitive maps of political elites. Princeton University Press, 1976.",
-      "year" : 1976,
-      "authors" : [ "Axelrod" ],
-      "department" : "Media and Information",
-      "relative_url" : "/example/relative/url"
-    }
-  ],
-  "links": [
-    {
-      "source" : 1,
-      "target": 4,
-      "similarities" : [
+      "relative_url" : "/example/relative/url",
+      "methods" : [
         {
-          "type" : "Methods",
-          "list" : [ "User-Centered Design" ]
+          "id" : 56893,
+          "weight" : 64
         }
-      ]
-    },
-    {
-      "source" : 0,
-      "target" : 3,
-      "similarities" : [
+      ],
+      "fields" : [
         {
-          "type" : "Methods",
-          "list" : [ "Surveys", "Content Analysis" ]
+          "id": 32659,
+          "weight" : 30
         },
         {
-          "type" : "Fields",
-          "list" : [ "Design", "Information Sciences" ]
-        }
-      ]
-    },
-    {
-      "source" : 2,
-      "target" : 5,
-      "similarities" : [
-        {
-          "type" : "Methods",
-          "list" : [ "Ethnography/Fieldwork", "Content Analysis" ]
+          "id": 23488,
+          "weight" : 84
         },
         {
-          "type" : "Fields",
-          "list" : [ "Human Computer Interaction", "Design", "Information Sciences", "Health Informatics" ]
+          "id": 38469,
+          "weight" : 63
         },
         {
-          "type" : "Theories",
-          "list" : [ "Cognitive Anthropology", "Critical Theory", "Cognitive Artifacts" ]
-        }
-      ]
-    },
-    {
-      "source" : 3,
-      "target": 6,
-      "similarities" : [
-        {
-          "type" : "Methods",
-          "list" : [ "User-Centered Design" ]
-        }
-      ]
-    },
-    {
-      "source" : 4,
-      "target" : 7,
-      "similarities" : [
-        {
-          "type" : "Methods",
-          "list" : [ "Surveys", "Content Analysis" ]
-        },
-        {
-          "type" : "Fields",
-          "list" : [ "Design", "Information Sciences" ]
-        }
-      ]
-    },
-    {
-      "source" : 5,
-      "target" : 8,
-      "similarities" : [
-        {
-          "type" : "Methods",
-          "list" : [ "Ethnography/Fieldwork", "Content Analysis" ]
-        },
-        {
-          "type" : "Fields",
-          "list" : [ "Human Computer Interaction", "Design", "Information Sciences", "Health Informatics" ]
-        },
-        {
-          "type" : "Theories",
-          "list" : [ "Cognitive Anthropology", "Critical Theory", "Cognitive Artifacts" ]
-        }
-      ]
-    },
-    {
-      "source" : 6,
-      "target": 9,
-      "similarities" : [
-        {
-          "type" : "Methods",
-          "list" : [ "User-Centered Design" ]
-        }
-      ]
-    },
-    {
-      "source" : 7,
-      "target" : 10,
-      "similarities" : [
-        {
-          "type" : "Methods",
-          "list" : [ "Surveys", "Content Analysis" ]
-        },
-        {
-          "type" : "Fields",
-          "list" : [ "Design", "Information Sciences" ]
-        }
-      ]
-    },
-    {
-      "source" : 8,
-      "target" : 11,
-      "similarities" : [
-        {
-          "type" : "Methods",
-          "list" : [ "Ethnography/Fieldwork", "Content Analysis" ]
-        },
-        {
-          "type" : "Fields",
-          "list" : [ "Human Computer Interaction", "Design", "Information Sciences", "Health Informatics" ]
-        },
-        {
-          "type" : "Theories",
-          "list" : [ "Cognitive Anthropology", "Critical Theory", "Cognitive Artifacts" ]
-        }
-      ]
-    },
-    {
-      "source" : 8,
-      "target": 7,
-      "similarities" : [
-        {
-          "type" : "Methods",
-          "list" : [ "User-Centered Design" ]
-        }
-      ]
-    },
-    {
-      "source" : 3,
-      "target" : 4,
-      "similarities" : [
-        {
-          "type" : "Methods",
-          "list" : [ "Surveys", "Content Analysis" ]
-        },
-        {
-          "type" : "Fields",
-          "list" : [ "Design", "Information Sciences" ]
-        }
-      ]
-    },
-    {
-      "source" : 2,
-      "target" : 1,
-      "similarities" : [
-        {
-          "type" : "Methods",
-          "list" : [ "Ethnography/Fieldwork", "Content Analysis" ]
-        },
-        {
-          "type" : "Fields",
-          "list" : [ "Human Computer Interaction", "Design", "Information Sciences", "Health Informatics" ]
-        },
-        {
-          "type" : "Theories",
-          "list" : [ "Cognitive Anthropology", "Critical Theory", "Cognitive Artifacts" ]
+          "id": 53986,
+          "weight" : 23
         }
       ]
     }
-  ]
+  ],
+  "attributes" : {
+    "methods" : {
+      "56893" : {
+        "name" : "User-Centered Design",
+        "relative_url" : "/example/relative/url"
+      }
+    },
+    "theories" : {
+      "82346" : {
+        "name" : "Cognitive Anthropology",
+        "relative_url" : "/example/relative/url"
+      },
+      "23469" : {
+        "name" : "Critical Theory",
+        "relative_url" : "/example/relative/url"
+      },
+      "34637" : {
+        "name" : "Cognitive Artifacts",
+        "relative_url" : "/example/relative/url"
+      }
+    },
+    "fields" : {
+      "32659" : {
+        "name" : "Human Computer Interaction",
+        "relative_url" : "/example/relative/url"
+      },
+      "23488" : {
+        "name" : "Design",
+        "relative_url" : "/example/relative/url"
+      },
+      "38469" : {
+        "name" : "Information Sciences",
+        "relative_url" : "/example/relative/url"
+      },
+      "53986" : {
+        "name" : "Health Informatics",
+        "relative_url" : "/example/relative/url"
+      }
+    }
+  }
 }

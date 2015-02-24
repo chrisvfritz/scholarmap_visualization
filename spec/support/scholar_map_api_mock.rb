@@ -71,50 +71,50 @@ private
       end
     end
 
-    links = case type
-    when :people, :references
-      Array.new(number_of_nodes * 2).map do
-        {
-          source: rand(number_of_nodes),
-          target: rand(number_of_nodes),
-          similarities: [
-            {
-              type: 'Methods',
-              list: METHODS.sample( rand(METHODS.size) )
-            },
-            {
-              type: 'Fields',
-              list: FIELDS.sample( rand(FIELDS.size) )
-            },
-            {
-              type: 'Theories',
-              list: THEORIES.sample( rand(THEORIES.size) )
-            }
-          ]
-        }
-      end
-    when :characteristics
-      Array.new(number_of_nodes * 2).map do
-        {
-          source: rand(number_of_nodes),
-          target: rand(number_of_nodes),
-          similarities: [
-            {
-              type: 'People',
-              list: Array.new(rand(10)).map { (5..20).map { (65 + rand(26)).chr }.join }
-            },
-            {
-              type: 'References',
-              list: Array.new(rand(10)).map { (5..20).map { (65 + rand(26)).chr }.join }
-            }
-          ]
-        }
-      end
-    end
+    # links = case type
+    # when :people, :references
+    #   Array.new(number_of_nodes ** 2 / 2).map do
+    #     {
+    #       source: rand(number_of_nodes),
+    #       target: rand(number_of_nodes),
+    #       # similarities: [
+    #       #   {
+    #       #     type: 'Methods',
+    #       #     list: METHODS.sample( rand(METHODS.size) )
+    #       #   },
+    #       #   {
+    #       #     type: 'Fields',
+    #       #     list: FIELDS.sample( rand(FIELDS.size) )
+    #       #   },
+    #       #   {
+    #       #     type: 'Theories',
+    #       #     list: THEORIES.sample( rand(THEORIES.size) )
+    #       #   }
+    #       # ]
+    #     }
+    #   end
+    # when :characteristics
+    #   Array.new(number_of_nodes * 2).map do
+    #     {
+    #       source: rand(number_of_nodes),
+    #       target: rand(number_of_nodes),
+    #       # similarities: [
+    #       #   {
+    #       #     type: 'People',
+    #       #     list: Array.new(rand(10)).map { (5..20).map { (65 + rand(26)).chr }.join }
+    #       #   },
+    #       #   {
+    #       #     type: 'References',
+    #       #     list: Array.new(rand(10)).map { (5..20).map { (65 + rand(26)).chr }.join }
+    #       #   }
+    #       # ]
+    #     }
+    #   end
+    # end
 
     {
       nodes: nodes,
-      links: links
+      # links: links
     }.to_json
   end
 end

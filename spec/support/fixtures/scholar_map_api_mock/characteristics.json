@@ -3,28 +3,56 @@
     {
       "name" : "Surveys",
       "type" : "Method",
-      "relative_url" : "/example/relative/url"
+      "relative_url" : "/example/relative/url",
+      "people" : [ 29834, 98745, 98274, 23469 ],
+      "references" : [
+        {
+          "id" : 93862,
+          "weight" : 26
+        }
+      ]
     },
     {
       "name" : "Design",
       "type" : "Field",
-      "relative_url" : "/example/relative/url"
-    }
-  ],
-  "links" : [
-    {
-      "source" : 1,
-      "target": 0,
-      "similarities" : [
+      "relative_url" : "/example/relative/url",
+      "people" : [ 98745, 98274 ],
+      "references" : [
         {
-          "type" : "People",
-          "list" : [ "Josh Introne", "Rick Wash" ]
-        },
-        {
-          "type" : "References",
-          "list" : [ "Axelrod, R.M. Structure of decision: The cognitive maps of political elites. Princeton University Press, 1976." ]
+          "id" : 93862,
+          "weight" : 82
         }
       ]
     }
-  ]
+  ],
+  "attributes" : {
+    "people" : {
+      "29824" : {
+        "name" : "Bob Johnson",
+        "relative_url" : "/example/relative/url"
+      },
+      "98745" : {
+        "name" : "Josh Introne",
+        "relative_url" : "/example/relative/url"
+      },
+      "98274" : {
+        "name" : "Rick Wash",
+        "relative_url" : "/example/relative/url"
+      },
+      "23469" : {
+        "name" : "Sarah Alverstein",
+        "relative_url" : "/example/relative/url"
+      },
+      "23952" : {
+        "name" : "Emily Ferguson",
+        "relative_url" : "/example/relative/url"
+      }
+    },
+    "references" : {
+      "93862" : {
+        "citation" : "Axelrod, R.M. Structure of decision: The cognitive maps of political elites. Princeton University Press, 1976.",
+        "relative_url" : "/example/relative/url"
+      }
+    }
+  }
 }

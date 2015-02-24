@@ -1,18 +1,7 @@
 h1
   | /api/v1/<strong>people</strong>/graphs/force-directed.json
 
-p This endpoint fetches a list of people and the relationships between them.
-
-h2 Optional Parameters
-
-h3 nodes_only
-
-p When set to true, includes "Venues", "Methods", "Fields", and "Theories" as attributes on each node, rather than listed in links. **This version will include no links.** The purpose is to significantly cut down the size of JSON responses, in exchange for having to do more client-side processing to calculate links.
-
-h4 Example
-
-.well
-  | /api/v1/people/graphs/force-directed.json<strong>?nodes_only=true</strong>
+p This endpoint fetches a list of people and their attributes.
 
 h2 Example Response
 
