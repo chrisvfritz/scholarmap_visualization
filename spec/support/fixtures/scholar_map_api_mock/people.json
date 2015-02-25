@@ -5,14 +5,26 @@
       "department" : "Media and Information",
       "relative_url" : "/example/relative/url",
       "methods" : [ 56893 ],
-      "theories" : [ 82346, 23469, 34637 ]
+      "theories" : [ 82346, 23469, 34637 ],
+      "references" : [
+        {
+          "id" : 93862,
+          "weight" : 82
+        }
+      ]
     },
     {
       "name" : "Rick Wash",
       "department" : "Media and Information",
       "relative_url" : "/example/relative/url",
       "methods" : [ 56893 ],
-      "fields" : [ 32659, 23488, 38469, 53986 ]
+      "fields" : [ 32659, 23488, 38469, 53986 ],
+      "references" : [
+        {
+          "id" : 93862,
+          "weight" : 27
+        }
+      ]
     }
   ],
   "attributes" : {
@@ -51,6 +63,12 @@
       },
       "53986" : {
         "name" : "Health Informatics",
+        "relative_url" : "/example/relative/url"
+      }
+    },
+    "references" : {
+      "93862" : {
+        "citation" : "Axelrod, R.M. Structure of decision: The cognitive maps of political elites. Princeton University Press, 1976.",
         "relative_url" : "/example/relative/url"
       }
     }
