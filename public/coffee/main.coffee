@@ -66,7 +66,6 @@ class ScholarMapViz.Map
       return [-10, 0]  if direction == 'n' || direction == 'nw' || direction == 'ne'
       return [10,  0]  if direction == 's' || direction == 'sw' || direction == 'se'
 
-
     @node_tip = d3.tip()
       .attr 'class', 'd3-tip'
       .direction node_tip_direction
@@ -89,6 +88,8 @@ class ScholarMapViz.Map
       ScholarMapViz.$container.fadeIn 500
 
       @graph = graph
+
+      @graph.links = @generate_links @graph.nodes
 
       @draw_link_by_buttons @graph.links
 
@@ -142,11 +143,13 @@ class ScholarMapViz.Map
             set_related_links_status d, 'inactive'
           .call @force.drag
 
+      # prevents nodes from spilling out the sides of the draw area
       node_binding_x = (d) =>
         @node_binding_x_cache = @node_binding_x_cache || {}
         return @node_binding_x_cache[d.x] if @node_binding_x_cache[d.x]
         @node_binding_x_cache[d.x] = Math.max @node_size(d), Math.min(@width - @node_size(d), d.x)
 
+      # prevents nodes from spilling out the top or bottom of the draw area
       node_binding_y = (d) =>
         @node_binding_y_cache = @node_binding_y_cache || {}
         return @node_binding_y_cache[d.y] if @node_binding_y_cache[d.y]
@@ -242,7 +245,7 @@ class ScholarMapViz.Map
   # sizes nodes by combined link weights
   node_size: (d) =>
     @node_size_cache = @node_size_cache || {}
-    return @node_size_cache[d.index] unless @node_size_cache[d.index] == undefined
+    return @node_size_cache[d.index] if @node_size_cache[d.index]
 
     connected_links = @graph.links.filter (link) ->
       link.source.index == d.index || link.target.index == d.index
@@ -264,19 +267,20 @@ class ScholarMapViz.Map
       attributes.push key
 
   # link tooltips list node similarities by type
-  link_tip_html: (d) ->
-    d.similarities.filter (similarity) ->
-      similarity.list.length > 0
-    .map (similarity) ->
-      "<span class=\"d3-tip-label\">#{similarity.type}:</span> #{similarity.list.join(', ')}"
+  link_tip_html: (d) =>
+    d.similarities.map (similarity) =>
+      type = similarity.type[0].toUpperCase() + similarity.type[1..-1]
+      attribute_names = similarity.list.map (item) =>
+        @graph.attributes[similarity.type][item.id].name
+      "<span class=\"d3-tip-label\">#{type}:</span> #{attribute_names.join(', ')}"
     .join '<br>'
 
   # link weight is determined by number of similarities between nodes
   link_weight: (d) ->
-    d.similarities.map (similarity) ->
-      similarity.list.length
-    .reduce (a, b) ->
-      a + b
+    weights = _.flatten d.similarities.map (similarity) ->
+      similarity.list.map (item) ->
+        item.weight
+    weights.reduce( (a, b) -> a + b ) / weights.length / 10
 
   # link width is a modified log of the calculated link weight
   link_width: (d) =>
@@ -293,9 +297,53 @@ class ScholarMapViz.Map
     $similarity_types_container.html ''
 
     for type in similarity_types
+      formatted_type = type[0].toUpperCase() + type[1..-1]
       $similarity_types_container.append """
-        <button class="btn btn-default btn-block active" data-similarity-type="#{type}">#{type}</button>
+        <button class="btn btn-default btn-block active" data-similarity-type="#{type}">#{formatted_type}</button>
       """
+
+  generate_links: (nodes) ->
+    links = nodes.map (node, index) =>
+      nodes.slice(index+1, nodes.length).map (other_node) =>
+        similarities = {}
+        any_links = false
+        for similarity_type in @similarity_types()
+          similarities[similarity_type] = if node[similarity_type] and other_node[similarity_type]
+            if node[similarity_type] and typeof(node[similarity_type][0]) == 'object'
+              node_attr_ids       =       node[similarity_type].map (similarity) -> similarity.id
+              other_node_attr_ids = other_node[similarity_type].map (similarity) -> similarity.id
+              similarities[similarity_type] = _.intersection(node_attr_ids, other_node_attr_ids).map (id) ->
+                node_attr_weight       = _.find(       node[similarity_type], (item) -> item.id == id ).weight
+                other_node_attr_weight = _.find( other_node[similarity_type], (item) -> item.id == id ).weight
+                {
+                  id: id
+                  weight: (node_attr_weight + other_node_attr_weight) / 2
+                }
+            else
+              node_attr_ids       =       node[similarity_type]
+              other_node_attr_ids = other_node[similarity_type]
+              similarities[similarity_type] = _.intersection(node_attr_ids, other_node_attr_ids).map (id) ->
+                id: id
+                weight: 50
+          else
+            []
+          any_links = true if similarities[similarity_type].length > 0
+        if any_links
+          {
+            source: nodes.indexOf node
+            target: nodes.indexOf other_node
+            similarities: @similarity_types().map (similarity_type) ->
+              {
+                type: similarity_type
+                list: similarities[similarity_type]
+              }
+            .filter (similarity) ->
+              similarity.list.length > 0
+          }
+        else
+          null
+
+    _.compact _.flatten(links)
 
 
 class ScholarMapViz.PeopleMap extends ScholarMapViz.Map
@@ -303,6 +351,9 @@ class ScholarMapViz.PeopleMap extends ScholarMapViz.Map
   constructor: ->
     @type = 'people'
     super
+
+  similarity_types: ->
+    ['fields', 'methods', 'theories', 'venues']
 
   # node tooltips should display people's name
   node_tip_html: (d) ->
@@ -315,13 +366,16 @@ class ScholarMapViz.ReferencesMap extends ScholarMapViz.Map
     @type = 'references'
     super
 
-  # node tooltips shuold display the reference citation, cutting it off it it's longer than 150 characters
+  # node tooltips should display the reference citation
   node_tip_html: (d) ->
     d.citation
 
   # node size depends on the number of authors for the reference
   node_size: (d) ->
     d3.max [10, Math.log( d.authors.length + 1 ) * 10]
+
+  similarity_types: ->
+    ['fields', 'methods', 'theories', 'venues']
 
 
 class ScholarMapViz.CharacteristicsMap extends ScholarMapViz.Map
@@ -330,9 +384,12 @@ class ScholarMapViz.CharacteristicsMap extends ScholarMapViz.Map
     @type = 'characteristics'
     super
 
-  # node tooltips shuold display the reference citation, cutting it off it it's longer than 150 characters
+  # node tooltips should display the characteristic names
   node_tip_html: (d) ->
     d.name
+
+  similarity_types: ->
+    ['people', 'references']
 
 
 class ScholarMapViz.DataToggle
