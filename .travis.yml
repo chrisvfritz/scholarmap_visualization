@@ -5,7 +5,7 @@ rvm:
 addons:
   code_climate:
     repo_token:
-      secure: ""
+      secure: "CF0eJeG/TQf7P19m/sydNBAnI+ciskFNVemAljZ8WmFsfhkx5hVNCbNvk2zutSvrjOPxuefMZQWinBxd/FZyP99tlJQsasnZBpjH8Sz5qGwRCY4ILmXYuKGk+fbGVYGBAaQ6pluKN6gR+Kz9uXEawMsNtE2vzLh+jJwriM6+pHs="
 
 bundler_args: --without development production
 
@@ -15,8 +15,8 @@ script:
 deploy:
   provider: heroku
   api_key:
-    secure: ""
+    secure: "CHUfTQfUMMJzDGe1MElInBW2cGTkkm32n00MPiLSCDVl58TBBsVN3cfzx/74ZJKyzwhx2KbNikQPa6UXlnugGHGQOH0Da0ujw/V2fC9Tp2bAuNLyW6a1zzordIEBdaxPXGR71biwSizU4dXp1iKWvzAc+ivEuSYLjme1CO9rG0U="
   app:
-    master: scholarmap-visualization
+    master: scholarmap-preview
   on:
     repo: chrisvfritz/scholarmap_visualization
