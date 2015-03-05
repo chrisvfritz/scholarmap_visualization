@@ -1,5 +1,6 @@
-PEOPLE_BUTTON_ID = '#people-button'
-REFERENCES_BUTTON_ID = '#references-button'
+PEOPLE_BUTTON = '[data-map-type="PeopleMap"]'
+REFERENCES_BUTTON = '[data-map-type="ReferencesMap"]'
+CHARACTERISTICS_BUTTON = '[data-map-type="CharacteristicsMap"]'
 
 describe 'the front page', type: :feature do
 
@@ -10,11 +11,11 @@ describe 'the front page', type: :feature do
   describe 'people button' do
 
     it 'exists' do
-      expect(page).to have_css(PEOPLE_BUTTON_ID)
+      expect(page).to have_css(PEOPLE_BUTTON)
     end
 
     it 'is active by default', js: true do
-      expect(page).to have_css("#{PEOPLE_BUTTON_ID}.active")
+      expect(page).to have_css("#{PEOPLE_BUTTON}.active")
     end
 
   end
@@ -22,11 +23,23 @@ describe 'the front page', type: :feature do
   describe 'references button' do
 
     it 'exists' do
-      expect(page).to have_css(REFERENCES_BUTTON_ID)
+      expect(page).to have_css(REFERENCES_BUTTON)
     end
 
     it 'is NOT active by default', js: true do
-      expect(page).not_to have_css("#{REFERENCES_BUTTON_ID}.active")
+      expect(page).not_to have_css("#{REFERENCES_BUTTON}.active")
+    end
+
+  end
+
+  describe 'characteristics button' do
+
+    it 'exists' do
+      expect(page).to have_css(CHARACTERISTICS_BUTTON)
+    end
+
+    it 'is NOT active by default', js: true do
+      expect(page).not_to have_css("#{CHARACTERISTICS_BUTTON}.active")
     end
 
   end
