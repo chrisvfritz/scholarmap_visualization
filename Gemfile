@@ -12,7 +12,6 @@ group :test do
   gem 'poltergeist'
   gem 'webmock', '~> 1.20.4'
   gem 'simplecov', '~> 0.9.0', require: false
-  gem 'codeclimate-test-reporter', require: false
 end
 
 group :development do

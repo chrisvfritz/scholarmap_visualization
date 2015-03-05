@@ -2,11 +2,6 @@ language: ruby
 rvm:
   - 2.2.0
 
-addons:
-  code_climate:
-    repo_token:
-      secure: "CF0eJeG/TQf7P19m/sydNBAnI+ciskFNVemAljZ8WmFsfhkx5hVNCbNvk2zutSvrjOPxuefMZQWinBxd/FZyP99tlJQsasnZBpjH8Sz5qGwRCY4ILmXYuKGk+fbGVYGBAaQ6pluKN6gR+Kz9uXEawMsNtE2vzLh+jJwriM6+pHs="
-
 bundler_args: --without development production
 
 script:
