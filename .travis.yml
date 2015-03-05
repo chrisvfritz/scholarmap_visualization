@@ -10,7 +10,7 @@ script:
 deploy:
   provider: heroku
   api_key:
-    secure: "CHUfTQfUMMJzDGe1MElInBW2cGTkkm32n00MPiLSCDVl58TBBsVN3cfzx/74ZJKyzwhx2KbNikQPa6UXlnugGHGQOH0Da0ujw/V2fC9Tp2bAuNLyW6a1zzordIEBdaxPXGR71biwSizU4dXp1iKWvzAc+ivEuSYLjme1CO9rG0U="
+    secure: "IH4rv7KuM4hyLlfdyEKGDcPCOoH5mohIbBFjHhYJxwxf3O2jtAdddhWwy1rXwh9TjcYk/sKJWds2i7x6Eg5vZmjR8gLiMTYyTuMl16EW5Vp9USQz1bV5jrdC0JcADmHIIPrA7fCup3FtItlics+iDy9fmPiOjXxbmAWzQDCo/WA="
   app:
     master: scholarmap-preview
   on:
