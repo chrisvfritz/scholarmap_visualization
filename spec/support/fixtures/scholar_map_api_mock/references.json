@@ -25,6 +25,12 @@
           "id": 34637,
           "weight" : 63
         }
+      ],
+      "people" : [
+        {
+          "id" : 34736,
+          "weight" : 35
+        }
       ]
     },
     {
@@ -55,6 +61,12 @@
         {
           "id": 53986,
           "weight" : 23
+        }
+      ],
+      "people" : [
+        {
+          "id" : 34736,
+          "weight" : 28
         }
       ]
     }
@@ -95,6 +107,12 @@
       },
       "53986" : {
         "name" : "Health Informatics",
+        "relative_url" : "/example/relative/url"
+      }
+    },
+    "people" : {
+      "34736" : {
+        "name" : "Sarah Gleeson",
         "relative_url" : "/example/relative/url"
       }
     }
