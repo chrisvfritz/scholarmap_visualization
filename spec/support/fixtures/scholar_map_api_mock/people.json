@@ -68,7 +68,7 @@
     },
     "references" : {
       "93862" : {
-        "citation" : "Axelrod, R.M. Structure of decision: The cognitive maps of political elites. Princeton University Press, 1976.",
+        "name" : "Axelrod, R.M. Structure of decision: The cognitive maps of political elites. Princeton University Press, 1976.",
         "relative_url" : "/example/relative/url"
       }
     }

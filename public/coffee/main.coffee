@@ -353,7 +353,7 @@ class ScholarMapViz.PeopleMap extends ScholarMapViz.Map
     super
 
   similarity_types: ->
-    ['fields', 'methods', 'theories', 'venues']
+    ['fields', 'methods', 'theories', 'venues', 'references']
 
   # node tooltips should display people's name
   node_tip_html: (d) ->
@@ -375,7 +375,7 @@ class ScholarMapViz.ReferencesMap extends ScholarMapViz.Map
     d3.max [10, Math.log( d.authors.length + 1 ) * 10]
 
   similarity_types: ->
-    ['fields', 'methods', 'theories', 'venues']
+    ['fields', 'methods', 'theories', 'venues', 'people']
 
 
 class ScholarMapViz.CharacteristicsMap extends ScholarMapViz.Map
