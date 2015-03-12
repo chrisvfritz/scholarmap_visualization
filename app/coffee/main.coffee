@@ -351,8 +351,6 @@ class ScholarMapViz.Map
       $(type).data 'similarity-type'
 
   active_similarity_types: ->
-    console.log @similarity_types()
-    console.log @similarity_exclusions()
     @similarity_types().filter (type) =>
       @similarity_exclusions().indexOf(type) < 0
 

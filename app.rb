@@ -9,7 +9,7 @@ class ScholarMapViz < Sinatra::Base
 
   get '/coffee/*.js' do
     filename = params[:splat].first
-    coffee "../public/coffee/#{filename}".to_sym
+    coffee "../app/coffee/#{filename}".to_sym
   end
 
   get '/' do
