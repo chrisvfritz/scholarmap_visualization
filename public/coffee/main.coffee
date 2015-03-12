@@ -287,18 +287,19 @@ class ScholarMapViz.Map
     Math.log( d3.max([2, @link_weight(d)]) ) * 5
 
   draw_link_by_buttons: (links) ->
+    return if ScholarMapViz.$similarity_types.data('links-for') == @type
+
     similarity_types = []
     for link in links
       for similarity in link.similarities
         similarity_types.push(similarity.type) unless similarity_types.indexOf(similarity.type) > -1
 
-    $similarity_types_container = $('#similarity-types')
-
-    $similarity_types_container.html ''
+    ScholarMapViz.$similarity_types.html ''
 
     for type in similarity_types
       formatted_type = type[0].toUpperCase() + type[1..-1]
-      $similarity_types_container.append """
+      ScholarMapViz.$similarity_types.data 'links-for', @type
+      ScholarMapViz.$similarity_types.append """
         <button class="btn btn-default btn-block active" data-similarity-type="#{type}">#{formatted_type}</button>
       """
 
@@ -307,7 +308,7 @@ class ScholarMapViz.Map
       nodes.slice(index+1, nodes.length).map (other_node) =>
         similarities = {}
         any_links = false
-        for similarity_type in @similarity_types()
+        for similarity_type in @active_similarity_types()
           similarities[similarity_type] = if node[similarity_type] and other_node[similarity_type]
             if node[similarity_type] and typeof(node[similarity_type][0]) == 'object'
               node_attr_ids       =       node[similarity_type].map (similarity) -> similarity.id
@@ -332,7 +333,7 @@ class ScholarMapViz.Map
           {
             source: nodes.indexOf node
             target: nodes.indexOf other_node
-            similarities: @similarity_types().map (similarity_type) ->
+            similarities: @active_similarity_types().map (similarity_type) ->
               {
                 type: similarity_type
                 list: similarities[similarity_type]
@@ -344,6 +345,16 @@ class ScholarMapViz.Map
           null
 
     _.compact _.flatten(links)
+
+  similarity_exclusions: ->
+    $.makeArray( ScholarMapViz.$similarity_types.find('button:not(.active)') ).map (type) ->
+      $(type).data 'similarity-type'
+
+  active_similarity_types: ->
+    console.log @similarity_types()
+    console.log @similarity_exclusions()
+    @similarity_types().filter (type) =>
+      @similarity_exclusions().indexOf(type) < 0
 
 
 class ScholarMapViz.PeopleMap extends ScholarMapViz.Map
@@ -366,6 +377,9 @@ class ScholarMapViz.ReferencesMap extends ScholarMapViz.Map
     @type = 'references'
     super
 
+  similarity_types: ->
+    ['fields', 'methods', 'theories', 'venues', 'people']
+
   # node tooltips should display the reference citation
   node_tip_html: (d) ->
     d.citation
@@ -374,9 +388,6 @@ class ScholarMapViz.ReferencesMap extends ScholarMapViz.Map
   node_size: (d) ->
     d3.max [10, Math.log( d.authors.length + 1 ) * 10]
 
-  similarity_types: ->
-    ['fields', 'methods', 'theories', 'venues', 'people']
-
 
 class ScholarMapViz.CharacteristicsMap extends ScholarMapViz.Map
 
@@ -384,12 +395,12 @@ class ScholarMapViz.CharacteristicsMap extends ScholarMapViz.Map
     @type = 'characteristics'
     super
 
+  similarity_types: ->
+    ['people', 'references']
+
   # node tooltips should display the characteristic names
   node_tip_html: (d) ->
     d.name
-
-  similarity_types: ->
-    ['people', 'references']
 
 
 class ScholarMapViz.DataToggle
@@ -397,7 +408,8 @@ class ScholarMapViz.DataToggle
   constructor:  ->
     $('#map-types').on 'click', 'button', ->
       $current_button = $(@)
-      choose_data $current_button, -> new ScholarMapViz[$current_button.data('map-type')]
+      choose_data $current_button, ->
+        ScholarMapViz.current_map = new ScholarMapViz[$current_button.data('map-type')]
 
   choose_data = ($current, activation_callback) ->
     unless $current.hasClass 'active'
@@ -406,12 +418,21 @@ class ScholarMapViz.DataToggle
       activation_callback()
 
 
+class ScholarMapViz.LinkTypeToggles
+
+  constructor: ->
+    ScholarMapViz.$similarity_types.on 'click', 'button', ->
+      $(@).toggleClass 'active'
+      ScholarMapViz.current_map.draw()
+
+
 class ScholarMapViz.Initializer
 
   constructor: ->
     @setup()
     @fetch_default_data()
     new ScholarMapViz.DataToggle
+    new ScholarMapViz.LinkTypeToggles
 
   setup: ->
     ScholarMapViz.$window = $(window)
@@ -419,8 +440,10 @@ class ScholarMapViz.Initializer
     ScholarMapViz.container  = '#visualization'
     ScholarMapViz.$container = $(ScholarMapViz.container)
 
+    ScholarMapViz.$similarity_types = $('#similarity-types')
+
   fetch_default_data: ->
-    new ScholarMapViz.PeopleMap
+    ScholarMapViz.current_map = new ScholarMapViz.PeopleMap
     $('#map-types').find('button[data-map-type="PeopleMap"]').addClass 'active'
 
 
