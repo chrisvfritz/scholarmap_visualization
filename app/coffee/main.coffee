@@ -33,14 +33,16 @@ class ScholarMapViz.Map
     @force = d3.layout.force()
       .size [@width, @height]
       .linkDistance (d) =>
-        base     = 150
-        grouping = if @group_by(d.source) == @group_by(d.target) then 40 else 0
-        weight   = @link_weight(d) * 10
-        base - grouping - weight
+        # base     = 150
+        # grouping = if @group_by(d.source) == @group_by(d.target) then 40 else 0
+        # weight   = @link_weight(d) * 10
+        # base - grouping - weight
+        50
       .linkStrength (d) =>
-        if @group_by(d.source) == @group_by(d.target) then 1 else .05
+        if @group_by(d.source) == @group_by(d.target) then 0.05 else .01
       .charge (d) =>
-        -9 * @node_size(d)
+        # -9 * @node_size(d)
+        -200
       .gravity 0.03
 
   # https://github.com/Caged/d3-tip/blob/master/docs/index.md#d3tip-api-documetation
@@ -82,151 +84,155 @@ class ScholarMapViz.Map
 
   get_data: ->
 
+    return @bind_data() if @graph
     # fetch data of the appropriate type from the API
+    # http://somelab09.cci.fsu.edu:8080/scholarMap
     d3.json "/api/v1/#{@type}/graphs/force-directed.json?#{window.location.search.substring(1)}", (error, graph) =>
-
-      ScholarMapViz.$container.fadeIn 500
-
       @graph = graph
+      @bind_data()
 
-      @graph.links = @generate_links @graph.nodes
+  bind_data: ->
 
-      @draw_link_by_buttons @graph.links
+    @graph.links = @generate_links @graph.nodes
 
-      # sets up the force layout with our API data
-      @force
-        .nodes @graph.nodes
-        .links @graph.links
-        .start()
+    @draw_link_by_buttons @graph.links
 
-      # sets up link hover area, with a minimum stroke-width
-      hover_link = @svg.selectAll '.hover-link'
-        .data @graph.links
-        .enter().append 'line'
-          .attr 'class', 'hover-link'
-          .style 'stroke-width', (d) => d3.max [ 15, @link_width(d) ]
-          .on 'mouseover', @link_tip.show
-          .on 'mouseenter', (d) ->
-            setTimeout (->
-              set_link_status d, 'active'
-            ), 1
-          .on 'mouseout', (d) =>
-            @link_tip.hide()
-            set_link_status d, 'inactive'
+    ScholarMapViz.$container.fadeIn 500
 
-      # sets up link styles
-      visible_link = @svg.selectAll '.visible-link'
-        .data @graph.links
-        .enter().append 'line'
-          .attr 'class', 'visible-link'
-          .style 'stroke-width', @link_width
+    # sets up the force layout with our API data
+    @force
+      .nodes @graph.nodes
+      .links @graph.links
+      .start()
 
-      # sets up node background, so that transparency doesn't reveal link tips
-      node_background = @svg.selectAll '.node-background'
-        .data @graph.nodes
-        .enter().append 'circle'
-          .attr 'class', 'node-background'
-          .attr 'r', @node_size
+    # sets up link hover area, with a minimum stroke-width
+    hover_link = @svg.selectAll '.hover-link'
+      .data @graph.links
+      .enter().append 'line'
+        .attr 'class', 'hover-link'
+        .style 'stroke-width', (d) => d3.max [ 15, @link_width(d) ]
+        .on 'mouseover', @link_tip.show
+        .on 'mouseenter', (d) ->
+          setTimeout (->
+            set_link_status d, 'active'
+          ), 1
+        .on 'mouseout', (d) =>
+          @link_tip.hide()
+          set_link_status d, 'inactive'
 
-      # sets up node style and behavior
-      node = @svg.selectAll '.node'
-        .data @graph.nodes
-        .enter().append 'circle'
-          .attr 'class', 'node'
-          .attr 'r', @node_size
-          .style 'fill', (d) => @color @group_by(d)
-          .on 'mouseover', @node_tip.show
-          .on 'mouseenter', (d) ->
-            set_related_links_status d, 'active'
-          .on 'mouseout', (d) =>
-            @node_tip.hide()
-            set_related_links_status d, 'inactive'
-          .call @force.drag
+    # sets up link styles
+    visible_link = @svg.selectAll '.visible-link'
+      .data @graph.links
+      .enter().append 'line'
+        .attr 'class', 'visible-link'
+        .style 'stroke-width', @link_width
 
-      # prevents nodes from spilling out the sides of the draw area
-      node_binding_x = (d) =>
-        @node_binding_x_cache = @node_binding_x_cache || {}
-        return @node_binding_x_cache[d.x] if @node_binding_x_cache[d.x]
-        @node_binding_x_cache[d.x] = Math.max @node_size(d), Math.min(@width - @node_size(d), d.x)
+    # sets up node background, so that transparency doesn't reveal link tips
+    node_background = @svg.selectAll '.node-background'
+      .data @graph.nodes
+      .enter().append 'circle'
+        .attr 'class', 'node-background'
+        .attr 'r', @node_size
 
-      # prevents nodes from spilling out the top or bottom of the draw area
-      node_binding_y = (d) =>
-        @node_binding_y_cache = @node_binding_y_cache || {}
-        return @node_binding_y_cache[d.y] if @node_binding_y_cache[d.y]
-        @node_binding_y_cache[d.y] = Math.max @node_size(d), Math.min(@height - @node_size(d), d.y)
+    # sets up node style and behavior
+    node = @svg.selectAll '.node'
+      .data @graph.nodes
+      .enter().append 'circle'
+        .attr 'class', 'node'
+        .attr 'r', @node_size
+        .style 'fill', (d) => @color @group_by(d)
+        .on 'mouseover', @node_tip.show
+        .on 'mouseenter', (d) ->
+          set_related_links_status d, 'active'
+        .on 'mouseout', (d) =>
+          @node_tip.hide()
+          set_related_links_status d, 'inactive'
+        .call @force.drag
 
-      # groups nodes by the group_by function
-      groups = d3.nest()
-        .key @group_by
-        .entries @graph.nodes
+    # prevents nodes from spilling out the sides of the draw area
+    node_binding_x = (d) =>
+      @node_binding_x_cache = @node_binding_x_cache || {}
+      return @node_binding_x_cache[d.x] if @node_binding_x_cache[d.x]
+      @node_binding_x_cache[d.x] = Math.max @node_size(d), Math.min(@width - @node_size(d), d.x)
 
-      # removes any groups with only a one or two nodes
-      groups = groups.filter (group) ->
-        group.values.length > 2
+    # prevents nodes from spilling out the top or bottom of the draw area
+    node_binding_y = (d) =>
+      @node_binding_y_cache = @node_binding_y_cache || {}
+      return @node_binding_y_cache[d.y] if @node_binding_y_cache[d.y]
+      @node_binding_y_cache[d.y] = Math.max @node_size(d), Math.min(@height - @node_size(d), d.y)
 
-      # calculates dimensions of hulls surrounding node groups
-      group_path = (d) ->
-        "M#{ d3.geom.hull( d.values.map (p) -> [node_binding_x(p), node_binding_y(p)] ).join 'L' }Z"
+    # groups nodes by the group_by function
+    groups = d3.nest()
+      .key @group_by
+      .entries @graph.nodes
 
-      # colors groups by their key
-      group_fill = (d) => @color d.key
+    # removes any groups with only a one or two nodes
+    groups = groups.filter (group) ->
+      group.values.length > 2
 
-      # sets a state-SOMETHING class on visible link
-      set_link_status = (d, status) ->
-        # get the visible-link of the currently hovered hover-link
-        $active_link = $(".visible-link[data-id='#{d.source.index}->#{d.target.index}']")
-        # remove any existing state classes
-        $active_link.attr 'class', $active_link.attr('class').replace(/(^|\s)state-\S+/g, '')
-        # add a new state class
-        $active_link.attr 'class', $active_link.attr('class') + " state-#{status}"
+    # calculates dimensions of hulls surrounding node groups
+    group_path = (d) ->
+      "M#{ d3.geom.hull( d.values.map (p) -> [node_binding_x(p), node_binding_y(p)] ).join 'L' }Z"
 
-      # sets a state-SOMETHING class on visible links related to a node
-      set_related_links_status = (d, status) =>
-        connected_links = @graph.links.filter (link) ->
-          link.source.index == d.index || link.target.index == d.index
-        if connected_links.length > 0
-          for link in connected_links
-            set_link_status link, status
+    # colors groups by their key
+    group_fill = (d) => @color d.key
 
-      # constantly redraws the graph, with the following items
-      @force.on 'tick', (e) =>
+    # sets a state-SOMETHING class on visible link
+    set_link_status = (d, status) ->
+      # get the visible-link of the currently hovered hover-link
+      $active_link = $(".visible-link[data-id='#{d.source.index}->#{d.target.index}']")
+      # remove any existing state classes
+      $active_link.attr 'class', $active_link.attr('class').replace(/(^|\s)state-\S+/g, '')
+      # add a new state class
+      $active_link.attr 'class', $active_link.attr('class') + " state-#{status}"
 
-        # the hulls surrounding node groups
-        @svg.selectAll 'path'
-          .data groups
+    # sets a state-SOMETHING class on visible links related to a node
+    set_related_links_status = (d, status) =>
+      connected_links = @graph.links.filter (link) ->
+        link.source.index == d.index || link.target.index == d.index
+      if connected_links.length > 0
+        for link in connected_links
+          set_link_status link, status
+
+    # constantly redraws the graph, with the following items
+    @force.on 'tick', (e) =>
+
+      # the hulls surrounding node groups
+      @svg.selectAll 'path'
+        .data groups
+        .attr 'd', group_path
+        .enter().insert 'path', 'circle'
+          .attr 'class', 'node-group'
+          .style 'fill', group_fill
+          .style 'stroke', group_fill
+          .style 'stroke-width', (d) =>
+            d3.max d.values.map( (p) => @node_size(p) * 2 + 20 )
           .attr 'd', group_path
-          .enter().insert 'path', 'circle'
-            .attr 'class', 'node-group'
-            .style 'fill', group_fill
-            .style 'stroke', group_fill
-            .style 'stroke-width', (d) =>
-              d3.max d.values.map( (p) => @node_size(p) * 2 + 20 )
-            .attr 'd', group_path
 
-        # the hover areas around links to show tooltips
-        hover_link
-          .attr 'x1', (d) -> node_binding_x d.source
-          .attr 'y1', (d) -> node_binding_y d.source
-          .attr 'x2', (d) -> node_binding_x d.target
-          .attr 'y2', (d) -> node_binding_y d.target
+      # the hover areas around links to show tooltips
+      hover_link
+        .attr 'x1', (d) -> node_binding_x d.source
+        .attr 'y1', (d) -> node_binding_y d.source
+        .attr 'x2', (d) -> node_binding_x d.target
+        .attr 'y2', (d) -> node_binding_y d.target
 
-        # the links that users see between nodes
-        visible_link
-          .attr 'x1', (d) -> node_binding_x d.source
-          .attr 'y1', (d) -> node_binding_y d.source
-          .attr 'x2', (d) -> node_binding_x d.target
-          .attr 'y2', (d) -> node_binding_y d.target
-          .attr 'data-id', (d) -> "#{d.source.index}->#{d.target.index}"
+      # the links that users see between nodes
+      visible_link
+        .attr 'x1', (d) -> node_binding_x d.source
+        .attr 'y1', (d) -> node_binding_y d.source
+        .attr 'x2', (d) -> node_binding_x d.target
+        .attr 'y2', (d) -> node_binding_y d.target
+        .attr 'data-id', (d) -> "#{d.source.index}->#{d.target.index}"
 
-        # the background of nodes (so that transparency doesn't reveal link tips)
-        node_background
-          .attr 'cx', node_binding_x
-          .attr 'cy', node_binding_y
+      # the background of nodes (so that transparency doesn't reveal link tips)
+      node_background
+        .attr 'cx', node_binding_x
+        .attr 'cy', node_binding_y
 
-        # the nodes
-        node
-          .attr 'cx', node_binding_x
-          .attr 'cy', node_binding_y
+      # the nodes
+      node
+        .attr 'cx', node_binding_x
+        .attr 'cy', node_binding_y
 
   # calculates communities with the Louvain algorithm
   louvain_communities: ->
@@ -257,7 +263,7 @@ class ScholarMapViz.Map
     .reduce (a, b) =>
       a + b
 
-    @node_size_cache[d.index] = calculated_node_size
+    @node_size_cache[d.index] = Math.sqrt calculated_node_size
 
   # returns all original node attributes (not including generated attributes)
   node_attributes: (nodes) ->
@@ -413,6 +419,7 @@ class ScholarMapViz.DataToggle
     unless $current.hasClass 'active'
       $current.siblings().removeClass 'active'
       $current.addClass 'active'
+      ScholarMapViz.$similarity_types.html ''
       activation_callback()
 
 
@@ -420,8 +427,9 @@ class ScholarMapViz.LinkTypeToggles
 
   constructor: ->
     ScholarMapViz.$similarity_types.on 'click', 'button', ->
-      $(@).toggleClass 'active'
-      ScholarMapViz.current_map.draw()
+      unless ScholarMapViz.$similarity_types.find('button.active').length == 1 && $(@).hasClass('active')
+        $(@).toggleClass 'active'
+        ScholarMapViz.current_map.draw()
 
 
 class ScholarMapViz.Initializer

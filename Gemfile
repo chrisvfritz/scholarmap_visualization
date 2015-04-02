@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.2.0'
+ruby '2.2.1'
 
 gem 'sinatra', '~> 1.4.5'
 gem 'rack', '1.5.2' # Locked to avoid bug in rack 1.6 giving unuseful error messages

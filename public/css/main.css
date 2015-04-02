@@ -19,6 +19,18 @@ body {
   background: #ecf0f1;
 }
 
+#left-sidebar .btn-default:hover, #left-sidebar .btn-default:focus {
+  color: #333;
+  background-color: #fff;
+  border-color: #ccc;
+}
+
+#left-sidebar .btn-default.active:hover, #left-sidebar .btn-default.active:focus {
+  color: #333;
+  background-color: #e6e6e6;
+  border-color: #adadad;
+}
+
 .scroll-area {
   height: 100%;
   overflow-y: scroll;
