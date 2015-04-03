@@ -3,20 +3,28 @@
  ******/
 
 body {
-  padding: 0 0 0 350px;
+  padding: 0 300px 0 350px;
   position: relative;
   background: white;
   color: #555;
 }
 
-#left-sidebar {
-  width: 350px;
+#left-sidebar, #right-sidebar {
   height: 100%;
   min-height: 1px;
   position: fixed;
-  left: 0;
   top: 0;
   background: #ecf0f1;
+}
+
+#left-sidebar {
+  width: 350px;
+  left: 0;
+}
+
+#right-sidebar {
+  width: 300px;
+  right: 0;
 }
 
 #left-sidebar .btn-default:hover, #left-sidebar .btn-default:focus {
@@ -37,10 +45,24 @@ body {
   padding: 20px;
 }
 
+.scroll-area > :first-child {
+  margin-top: 0;
+  padding-top: 0;
+}
+
+.scroll-area > :last-child {
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
 #groups-legend {
   display: inline-block;
   margin-top: 20px;
   text-align: left;
+}
+
+#node-title {
+  margin-top: 0;
 }
 
 /***********

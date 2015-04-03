@@ -142,8 +142,20 @@ class ScholarMapViz.Map
         .attr 'r', @node_size
         .style 'fill', (d) => @color @group_by(d)
         .on 'mouseover', @node_tip.show
-        .on 'mouseenter', (d) ->
-          set_related_links_status d, 'active'
+        .on 'mouseenter', (d) =>
+          $('#node-title').html @node_tip_html(d)
+          $('#node-url').attr 'href', d.relative_url
+          $node_attrs = $('#node-attrs').html ''
+          for key of d
+            continue if key in ['name', 'citation', 'relative_url']
+            break    if key == 'index' or key in @similarity_types()
+            $node_attrs.append """
+              <h4>#{key[0].toUpperCase() + key[1..-1]}</h4>
+              <p>#{if typeof(d[key]) == 'object' then d[key].join(', ') else d[key]}</p>
+            """
+          setTimeout (->
+            set_related_links_status d, 'active'
+          ), 1
         .on 'mouseout', (d) =>
           @node_tip.hide()
           set_related_links_status d, 'inactive'
@@ -263,7 +275,7 @@ class ScholarMapViz.Map
     .reduce (a, b) =>
       a + b
 
-    @node_size_cache[d.index] = Math.sqrt calculated_node_size
+    @node_size_cache[d.index] = d3.max [ Math.sqrt(calculated_node_size), 10 ]
 
   # returns all original node attributes (not including generated attributes)
   node_attributes: (nodes) ->
@@ -295,6 +307,8 @@ class ScholarMapViz.Map
   draw_link_by_buttons: (links) ->
     return if ScholarMapViz.$similarity_types.data('links-for') == @type
 
+    ScholarMapViz.$similarity_types.css 'display', 'none'
+
     similarity_types = []
     for link in links
       for similarity in link.similarities
@@ -308,6 +322,8 @@ class ScholarMapViz.Map
       ScholarMapViz.$similarity_types.append """
         <button class="btn btn-default btn-block active" data-similarity-type="#{type}">#{formatted_type}</button>
       """
+
+    ScholarMapViz.$similarity_types.fadeIn 500
 
   generate_links: (nodes) ->
     links = nodes.map (node, index) =>
