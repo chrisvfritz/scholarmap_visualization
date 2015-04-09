@@ -8,6 +8,7 @@ class ScholarMapViz.Map
   # draws the map
   draw: ->
     ScholarMapViz.$container.html ''
+    $('.loader').addClass 'loading'
     @initialize_drawing_area()
     @set_colors()
     @initialize_force_layout()
@@ -83,11 +84,9 @@ class ScholarMapViz.Map
     @svg.call @link_tip
 
   get_data: ->
-
     return @bind_data() if @graph
     # fetch data of the appropriate type from the API
-    # http://somelab09.cci.fsu.edu:8080/scholarMap
-    d3.json "/api/v1/#{@type}/graphs/force-directed.json?#{window.location.search.substring(1)}", (error, graph) =>
+    d3.json "http://somelab09.cci.fsu.edu:8080/scholarMap/api/v1/#{@type}/graphs/force-directed?#{window.location.search.substring(1)}", (error, graph) =>
       @graph = graph
       @bind_data()
 
@@ -97,13 +96,17 @@ class ScholarMapViz.Map
 
     @draw_link_by_buttons @graph.links
 
-    ScholarMapViz.$container.fadeIn 500
-
     # sets up the force layout with our API data
     @force
       .nodes @graph.nodes
       .links @graph.links
       .start()
+
+    setTimeout(=>
+      @force.stop()
+      $('.loader').removeClass 'loading'
+      ScholarMapViz.$container.fadeIn 500
+    , 3000)
 
     # sets up link hover area, with a minimum stroke-width
     hover_link = @svg.selectAll '.hover-link'
@@ -302,7 +305,7 @@ class ScholarMapViz.Map
 
   # link width is a modified log of the calculated link weight
   link_width: (d) =>
-    Math.log( d3.max([2, @link_weight(d)]) ) * 5
+    Math.log( d3.max([2, @link_weight(d)]) )# * 5
 
   draw_link_by_buttons: (links) ->
     return if ScholarMapViz.$similarity_types.data('links-for') == @type
