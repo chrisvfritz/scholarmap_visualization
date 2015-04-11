@@ -104,6 +104,9 @@ class ScholarMapViz.Map
 
     setTimeout(=>
       @force.stop()
+      # setTimeout(=>
+      #   node.fixed = true for node in @graph.nodes
+      # , 100)
       $('.loader').removeClass 'loading'
       ScholarMapViz.$container.fadeIn 500
     , 3000)
@@ -162,7 +165,7 @@ class ScholarMapViz.Map
         .on 'mouseout', (d) =>
           @node_tip.hide()
           set_related_links_status d, 'inactive'
-        .call @force.drag
+        # .call @force.drag
 
     # prevents nodes from spilling out the sides of the draw area
     node_binding_x = (d) =>
@@ -298,10 +301,16 @@ class ScholarMapViz.Map
 
   # link weight is determined by number of similarities between nodes
   link_weight: (d) ->
+    @link_weight_cache = @link_weight_cache || {}
+    return @link_weight_cache[d.index] if @link_weight_cache[d.index]
+
     weights = _.flatten d.similarities.map (similarity) ->
       similarity.list.map (item) ->
         item.weight
-    weights.reduce( (a, b) -> a + b ) / weights.length / 10
+    total_weight = weights.reduce( (a, b) -> a + b ) / weights.length / 10
+
+    @link_weight_cache[d.index] = total_weight
+
 
   # link width is a modified log of the calculated link weight
   link_width: (d) =>
@@ -448,6 +457,7 @@ class ScholarMapViz.LinkTypeToggles
     ScholarMapViz.$similarity_types.on 'click', 'button', ->
       unless ScholarMapViz.$similarity_types.find('button.active').length == 1 && $(@).hasClass('active')
         $(@).toggleClass 'active'
+        ScholarMapViz.current_map.link_weight_cache = {}
         ScholarMapViz.current_map.draw()
 
 
