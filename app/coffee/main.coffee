@@ -112,19 +112,19 @@ class ScholarMapViz.Map
     , 3000)
 
     # sets up link hover area, with a minimum stroke-width
-    hover_link = @svg.selectAll '.hover-link'
-      .data @graph.links
-      .enter().append 'line'
-        .attr 'class', 'hover-link'
-        .style 'stroke-width', (d) => d3.max [ 15, @link_width(d) ]
-        .on 'mouseover', @link_tip.show
-        .on 'mouseenter', (d) ->
-          setTimeout (->
-            set_link_status d, 'active'
-          ), 1
-        .on 'mouseout', (d) =>
-          @link_tip.hide()
-          set_link_status d, 'inactive'
+    # hover_link = @svg.selectAll '.hover-link'
+    #   .data @graph.links
+    #   .enter().append 'line'
+    #     .attr 'class', 'hover-link'
+    #     .style 'stroke-width', (d) => d3.max [ 15, @link_width(d) ]
+    #     .on 'mouseover', @link_tip.show
+    #     .on 'mouseenter', (d) ->
+    #       setTimeout (->
+    #         set_link_status d, 'active'
+    #       ), 1
+    #     .on 'mouseout', (d) =>
+    #       @link_tip.hide()
+    #       set_link_status d, 'inactive'
 
     # sets up link styles
     visible_link = @svg.selectAll '.visible-link'
@@ -134,11 +134,11 @@ class ScholarMapViz.Map
         .style 'stroke-width', @link_width
 
     # sets up node background, so that transparency doesn't reveal link tips
-    node_background = @svg.selectAll '.node-background'
-      .data @graph.nodes
-      .enter().append 'circle'
-        .attr 'class', 'node-background'
-        .attr 'r', @node_size
+    # node_background = @svg.selectAll '.node-background'
+    #   .data @graph.nodes
+    #   .enter().append 'circle'
+    #     .attr 'class', 'node-background'
+    #     .attr 'r', @node_size
 
     # sets up node style and behavior
     node = @svg.selectAll '.node'
@@ -165,7 +165,7 @@ class ScholarMapViz.Map
         .on 'mouseout', (d) =>
           @node_tip.hide()
           set_related_links_status d, 'inactive'
-        # .call @force.drag
+        .call @force.drag
 
     # prevents nodes from spilling out the sides of the draw area
     node_binding_x = (d) =>
@@ -228,11 +228,11 @@ class ScholarMapViz.Map
           .attr 'd', group_path
 
       # the hover areas around links to show tooltips
-      hover_link
-        .attr 'x1', (d) -> node_binding_x d.source
-        .attr 'y1', (d) -> node_binding_y d.source
-        .attr 'x2', (d) -> node_binding_x d.target
-        .attr 'y2', (d) -> node_binding_y d.target
+      # hover_link
+      #   .attr 'x1', (d) -> node_binding_x d.source
+      #   .attr 'y1', (d) -> node_binding_y d.source
+      #   .attr 'x2', (d) -> node_binding_x d.target
+      #   .attr 'y2', (d) -> node_binding_y d.target
 
       # the links that users see between nodes
       visible_link
@@ -243,9 +243,9 @@ class ScholarMapViz.Map
         .attr 'data-id', (d) -> "#{d.source.index}->#{d.target.index}"
 
       # the background of nodes (so that transparency doesn't reveal link tips)
-      node_background
-        .attr 'cx', node_binding_x
-        .attr 'cy', node_binding_y
+      # node_background
+      #   .attr 'cx', node_binding_x
+      #   .attr 'cy', node_binding_y
 
       # the nodes
       node
@@ -268,20 +268,22 @@ class ScholarMapViz.Map
 
   # sizes nodes by combined link weights
   node_size: (d) =>
-    @node_size_cache = @node_size_cache || {}
-    return @node_size_cache[d.index] if @node_size_cache[d.index]
+    10
 
-    connected_links = @graph.links.filter (link) ->
-      link.source.index == d.index || link.target.index == d.index
+    # @node_size_cache = @node_size_cache || {}
+    # return @node_size_cache[d.index] if @node_size_cache[d.index]
 
-    return 0 if connected_links.length == 0
+    # connected_links = @graph.links.filter (link) ->
+    #   link.source.index == d.index || link.target.index == d.index
 
-    calculated_node_size = connected_links.map (link) =>
-      @link_weight(link)
-    .reduce (a, b) =>
-      a + b
+    # return 0 if connected_links.length == 0
 
-    @node_size_cache[d.index] = d3.max [ Math.sqrt(calculated_node_size), 10 ]
+    # calculated_node_size = connected_links.map (link) =>
+    #   @link_weight(link)
+    # .reduce (a, b) =>
+    #   a + b
+
+    # @node_size_cache[d.index] = d3.max [ Math.sqrt(calculated_node_size), 10 ]
 
   # returns all original node attributes (not including generated attributes)
   node_attributes: (nodes) ->
