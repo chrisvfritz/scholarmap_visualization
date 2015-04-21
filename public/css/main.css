@@ -85,14 +85,14 @@ body {
 .node {
   stroke: #fff;
   stroke-width: 2px;
-  opacity: .8;
-  stroke-opacity: .8;
+  opacity: 1;
+  stroke-opacity: 1;
   cursor: move;
   transform: translate3d(0,0,0);
 }
 
 .node:hover {
-  opacity: 1;
+  stroke-width: 3px;
 }
 
 .visible-link {

@@ -131,7 +131,8 @@ class ScholarMapViz.Map
       .data @graph.links
       .enter().append 'line'
         .attr 'class', 'visible-link'
-        .style 'stroke-width', @link_width
+        .style 'stroke-width', 2 # @link_width
+        # .style 'opacity', @link_opacity
 
     # sets up node background, so that transparency doesn't reveal link tips
     # node_background = @svg.selectAll '.node-background'
@@ -302,22 +303,35 @@ class ScholarMapViz.Map
       "<span class=\"d3-tip-label\">#{type}:</span> #{attribute_names.join(', ')}"
     .join '<br>'
 
+  link_index: (d) ->
+    "#{d.source.index}->#{d.target.index}"
+
   # link weight is determined by number of similarities between nodes
   link_weight: (d) ->
+
     @link_weight_cache = @link_weight_cache || {}
-    return @link_weight_cache[d.index] if @link_weight_cache[d.index]
+    return @link_weight_cache[@link_index(d)] if @link_weight_cache[@link_index(d)]
 
     weights = _.flatten d.similarities.map (similarity) ->
       similarity.list.map (item) ->
         item.weight
-    total_weight = weights.reduce( (a, b) -> a + b ) / weights.length / 10
+    total_weight = weights.reduce( (a, b) -> a + b )
 
-    @link_weight_cache[d.index] = total_weight
+    @link_weight_cache[@link_index(d)] = total_weight
 
 
   # link width is a modified log of the calculated link weight
   link_width: (d) =>
     Math.log( d3.max([2, @link_weight(d)]) )# * 5
+
+  link_opacity: (d) =>
+    @link_opacity_cache = @link_opacity_cache || {}
+    return @link_opacity_cache[@link_index(d)] if @link_opacity_cache[@link_index(d)]
+
+    @max_link_weight = @max_link_weight || d3.max( Object.keys(@link_weight_cache).map (key) => @link_weight_cache[key] )
+    calculated_weight = @link_weight(d) / @max_link_weight
+
+    @link_opacity_cache[@link_index(d)] = calculated_weight
 
   draw_link_by_buttons: (links) ->
     return if ScholarMapViz.$similarity_types.data('links-for') == @type
