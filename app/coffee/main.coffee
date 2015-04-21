@@ -149,6 +149,10 @@ class ScholarMapViz.Map
         .style 'fill', (d) => @color @group_by(d)
         .on 'mouseover', @node_tip.show
         .on 'mouseenter', (d) =>
+          setTimeout (->
+            set_related_links_status d, 'active'
+          ), 1
+        .on 'click', (d) =>
           $('#node-title').html @node_tip_html(d)
           $('#node-url').attr 'href', d.relative_url
           $node_attrs = $('#node-attrs').html ''
@@ -159,9 +163,6 @@ class ScholarMapViz.Map
               <h4>#{key[0].toUpperCase() + key[1..-1]}</h4>
               <p>#{if typeof(d[key]) == 'object' then d[key].join(', ') else d[key]}</p>
             """
-          setTimeout (->
-            set_related_links_status d, 'active'
-          ), 1
         .on 'mouseout', (d) =>
           @node_tip.hide()
           set_related_links_status d, 'inactive'
