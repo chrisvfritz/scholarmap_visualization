@@ -74,12 +74,10 @@ body {
   stroke-linejoin: round;
   opacity: .15;
   pointer-events: none;
-  transform: translate3d(0,0,0);
 }
 
 .node-background {
   fill: white;
-  transform: translate3d(0,0,0);
 }
 
 .node {
@@ -88,7 +86,6 @@ body {
   opacity: 1;
   stroke-opacity: 1;
   cursor: move;
-  transform: translate3d(0,0,0);
 }
 
 .node:hover {
@@ -97,9 +94,8 @@ body {
 
 .visible-link {
   stroke: #999;
-  stroke-opacity: .6;
+  /*stroke-opacity: 1;*/
   pointer-events: none;
-  transform: translate3d(0,0,0);
 }
 
 .visible-link.state-active {
@@ -109,7 +105,6 @@ body {
 
 .hover-link {
   stroke: transparent;
-  transform: translate3d(0,0,0);
 }
 
 /***********

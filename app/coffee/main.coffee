@@ -2,54 +2,65 @@ window.ScholarMapViz = {}
 
 class ScholarMapViz.Map
 
+  similarity_types = undefined
+  node_tip_html    = undefined
+  data_type        = undefined
   constructor: ->
+    similarity_types = @similarity_types
+    node_tip_html    = @node_tip_html
+    data_type        = @type
     @draw()
 
   # draws the map
   draw: ->
     ScholarMapViz.$container.html ''
     $('.loader').addClass 'loading'
-    @initialize_drawing_area()
-    @set_colors()
-    @initialize_force_layout()
-    @initialize_tooltips()
+    initialize_drawing_area()
+    set_colors()
+    initialize_force_layout()
+    initialize_tooltips()
     ScholarMapViz.$container.fadeOut 0
     @get_data()
 
   # sets up the SVG to fill its container
-  initialize_drawing_area: ->
-    @width  = ScholarMapViz.$container.outerWidth()
-    @height = ScholarMapViz.$window.height()
+  width  = undefined
+  height = undefined
+  svg    = undefined
+  initialize_drawing_area = ->
+    width  = ScholarMapViz.$container.outerWidth()
+    height = ScholarMapViz.$window.height()
 
-    @svg = d3.select(ScholarMapViz.container).append 'svg'
-      .attr 'width',  @width
-      .attr 'height', @height
+    svg = d3.select(ScholarMapViz.container).append 'svg'
+      .attr 'width',  width
+      .attr 'height', height
 
   # https://github.com/mbostock/d3/wiki/Ordinal-Scales#categorical-colors
-  set_colors: ->
-    @color = d3.scale.category10();
+  color = undefined
+  set_colors = ->
+    color = d3.scale.category10();
 
   # https://github.com/mbostock/d3/wiki/Force-Layout
-  initialize_force_layout: ->
-    @force = d3.layout.force()
-      .size [@width, @height]
-      .linkDistance (d) =>
+  force = undefined
+  initialize_force_layout = ->
+    force = d3.layout.force()
+      .size [width, height]
+      .linkDistance 50
         # base     = 150
         # grouping = if @group_by(d.source) == @group_by(d.target) then 40 else 0
         # weight   = @link_weight(d) * 10
         # base - grouping - weight
-        50
-      .linkStrength (d) =>
-        if @group_by(d.source) == @group_by(d.target) then 0.05 else .01
-      .charge (d) =>
+      .linkStrength (d) ->
+        if group_by(d.source) == group_by(d.target) then 0.05 else .01
+      .charge (d) ->
         # -9 * @node_size(d)
         -200
       .gravity 0.03
 
   # https://github.com/Caged/d3-tip/blob/master/docs/index.md#d3tip-api-documetation
-  initialize_tooltips: ->
-    width  = @width
-    height = @height
+  node_tip = undefined
+  link_tip = undefined
+  initialize_tooltips = ->
+    node_tip_html = @node_tip_html
 
     node_tip_direction = (override_this) ->
       element = if override_this instanceof SVGCircleElement then override_this else @
@@ -69,42 +80,43 @@ class ScholarMapViz.Map
       return [-10, 0]  if direction == 'n' || direction == 'nw' || direction == 'ne'
       return [10,  0]  if direction == 's' || direction == 'sw' || direction == 'se'
 
-    @node_tip = d3.tip()
+    node_tip = d3.tip()
       .attr 'class', 'd3-tip'
       .direction node_tip_direction
       .offset node_tip_offset
-      .html @node_tip_html
+      .html node_tip_html
 
-    @link_tip = d3.tip()
+    link_tip = d3.tip()
       .attr 'class', 'd3-tip'
       .offset -> [@.getBBox().height / 2 - 5, 0]
-      .html @link_tip_html
+      .html link_tip_html
 
-    @svg.call @node_tip
-    @svg.call @link_tip
+    svg.call node_tip
+    svg.call link_tip
 
+  graph = undefined
   get_data: ->
-    return @bind_data() if @graph
+    return bind_data() if graph
     # fetch data of the appropriate type from the API
-    d3.json "http://somelab09.cci.fsu.edu:8080/scholarMap/api/v1/#{@type}/graphs/force-directed?#{window.location.search.substring(1)}", (error, graph) =>
-      @graph = graph
-      @bind_data()
+    d3.json "http://somelab09.cci.fsu.edu:8080/scholarMap/api/v1/#{data_type}/graphs/force-directed?#{window.location.search.substring(1)}", (error, data) ->
+      graph = data
+      bind_data()
 
-  bind_data: ->
+  bind_data = ->
 
-    @graph.links = @generate_links @graph.nodes
+    graph.links = generate_links graph.nodes
 
-    @draw_link_by_buttons @graph.links
+    draw_link_by_buttons graph.links
 
     # sets up the force layout with our API data
-    @force
-      .nodes @graph.nodes
-      .links @graph.links
+    force
+      .nodes graph.nodes
+      .links graph.links
       .start()
 
-    setTimeout(=>
-      @force.stop()
-      # setTimeout(=>
+    setTimeout(->
+      force.stop()
+      # setTimeout(->
       #   node.fixed = true for node in @graph.nodes
       # , 100)
       $('.loader').removeClass 'loading'
@@ -127,12 +139,12 @@ class ScholarMapViz.Map
     #       set_link_status d, 'inactive'
 
     # sets up link styles
-    visible_link = @svg.selectAll '.visible-link'
-      .data @graph.links
+    visible_link = svg.selectAll '.visible-link'
+      .data graph.links
       .enter().append 'line'
         .attr 'class', 'visible-link'
         .style 'stroke-width', 2 # @link_width
-        # .style 'opacity', @link_opacity
+        .style 'opacity', link_opacity
 
     # sets up node background, so that transparency doesn't reveal link tips
     # node_background = @svg.selectAll '.node-background'
@@ -142,49 +154,49 @@ class ScholarMapViz.Map
     #     .attr 'r', @node_size
 
     # sets up node style and behavior
-    node = @svg.selectAll '.node'
-      .data @graph.nodes
+    node = svg.selectAll '.node'
+      .data graph.nodes
       .enter().append 'circle'
         .attr 'class', 'node'
-        .attr 'r', @node_size
-        .style 'fill', (d) => @color @group_by(d)
-        .on 'mouseover', @node_tip.show
-        .on 'mouseenter', (d) =>
+        .attr 'r', node_size
+        .style 'fill', (d) -> color group_by(d)
+        .on 'mouseover', node_tip.show
+        .on 'mouseenter', (d) ->
           setTimeout (->
             set_related_links_status d, 'active'
           ), 1
-        .on 'click', (d) =>
-          $('#node-title').html @node_tip_html(d)
+        .on 'click', (d) ->
+          $('#node-title').html node_tip_html(d)
           $('#node-url').attr 'href', d.relative_url
           $node_attrs = $('#node-attrs').html ''
           for key of d
             continue if key in ['name', 'citation', 'relative_url']
-            break    if key == 'index' or key in @similarity_types()
+            break    if key == 'index' or key in similarity_types()
             $node_attrs.append """
               <h4>#{key[0].toUpperCase() + key[1..-1]}</h4>
               <p>#{if typeof(d[key]) == 'object' then d[key].join(', ') else d[key]}</p>
             """
-        .on 'mouseout', (d) =>
-          @node_tip.hide()
+        .on 'mouseout', (d) ->
+          node_tip.hide()
           set_related_links_status d, 'inactive'
-        .call @force.drag
+        .call force.drag
 
     # prevents nodes from spilling out the sides of the draw area
-    node_binding_x = (d) =>
-      @node_binding_x_cache = @node_binding_x_cache || {}
-      return @node_binding_x_cache[d.x] if @node_binding_x_cache[d.x]
-      @node_binding_x_cache[d.x] = Math.max @node_size(d), Math.min(@width - @node_size(d), d.x)
+    node_binding_x = (d) ->
+      node_binding_x_cache = node_binding_x_cache || {}
+      return node_binding_x_cache[d.x] if node_binding_x_cache[d.x]
+      node_binding_x_cache[d.x] = Math.max node_size(d), Math.min(width - node_size(d), d.x)
 
     # prevents nodes from spilling out the top or bottom of the draw area
-    node_binding_y = (d) =>
-      @node_binding_y_cache = @node_binding_y_cache || {}
-      return @node_binding_y_cache[d.y] if @node_binding_y_cache[d.y]
-      @node_binding_y_cache[d.y] = Math.max @node_size(d), Math.min(@height - @node_size(d), d.y)
+    node_binding_y = (d) ->
+      node_binding_y_cache = node_binding_y_cache || {}
+      return node_binding_y_cache[d.y] if node_binding_y_cache[d.y]
+      node_binding_y_cache[d.y] = Math.max node_size(d), Math.min(height - node_size(d), d.y)
 
     # groups nodes by the group_by function
     groups = d3.nest()
-      .key @group_by
-      .entries @graph.nodes
+      .key group_by
+      .entries graph.nodes
 
     # removes any groups with only a one or two nodes
     groups = groups.filter (group) ->
@@ -195,7 +207,7 @@ class ScholarMapViz.Map
       "M#{ d3.geom.hull( d.values.map (p) -> [node_binding_x(p), node_binding_y(p)] ).join 'L' }Z"
 
     # colors groups by their key
-    group_fill = (d) => @color d.key
+    group_fill = (d) -> color d.key
 
     # sets a state-SOMETHING class on visible link
     set_link_status = (d, status) ->
@@ -207,26 +219,26 @@ class ScholarMapViz.Map
       $active_link.attr 'class', $active_link.attr('class') + " state-#{status}"
 
     # sets a state-SOMETHING class on visible links related to a node
-    set_related_links_status = (d, status) =>
-      connected_links = @graph.links.filter (link) ->
+    set_related_links_status = (d, status) ->
+      connected_links = graph.links.filter (link) ->
         link.source.index == d.index || link.target.index == d.index
       if connected_links.length > 0
         for link in connected_links
           set_link_status link, status
 
     # constantly redraws the graph, with the following items
-    @force.on 'tick', (e) =>
+    force.on 'tick', (e) ->
 
       # the hulls surrounding node groups
-      @svg.selectAll 'path'
+      svg.selectAll 'path'
         .data groups
         .attr 'd', group_path
         .enter().insert 'path', 'circle'
           .attr 'class', 'node-group'
           .style 'fill', group_fill
           .style 'stroke', group_fill
-          .style 'stroke-width', (d) =>
-            d3.max d.values.map( (p) => @node_size(p) * 2 + 20 )
+          .style 'stroke-width', (d) ->
+            d3.max d.values.map( (p) -> node_size(p) * 2 + 20 )
           .attr 'd', group_path
 
       # the hover areas around links to show tooltips
@@ -255,21 +267,21 @@ class ScholarMapViz.Map
         .attr 'cy', node_binding_y
 
   # calculates communities with the Louvain algorithm
-  louvain_communities: ->
-    louvain_nodes = [0..@graph.nodes.length]
-    louvain_edges = @graph.links.map (link) =>
+  louvain_communities = ->
+    louvain_nodes = [0..graph.nodes.length]
+    louvain_edges = graph.links.map (link) ->
       source: link.source.index,
       target: link.target.index,
-      weight: @link_weight(link)
+      weight: link_weight(link)
     communities = jLouvain().nodes(louvain_nodes).edges(louvain_edges)()
-    @louvain_communities = -> communities
+    louvain_communities = -> communities
 
   # groups by Louvain communities
-  group_by: (d) =>
-    @louvain_communities()[d.index]
+  group_by = (d) ->
+    louvain_communities()[d.index]
 
   # sizes nodes by combined link weights
-  node_size: (d) =>
+  node_size = (d) ->
     10
 
     # @node_size_cache = @node_size_cache || {}
@@ -288,52 +300,56 @@ class ScholarMapViz.Map
     # @node_size_cache[d.index] = d3.max [ Math.sqrt(calculated_node_size), 10 ]
 
   # returns all original node attributes (not including generated attributes)
-  node_attributes: (nodes) ->
+  node_attributes = (nodes) ->
     attributes = []
     for key of nodes[0]
       return attributes if key == 'index'
       attributes.push key
 
   # link tooltips list node similarities by type
-  link_tip_html: (d) =>
-    d.similarities.map (similarity) =>
+  link_tip_html = (d) ->
+    d.similarities.map (similarity) ->
       type = similarity.type[0].toUpperCase() + similarity.type[1..-1]
-      attribute_names = similarity.list.map (item) =>
-        @graph.attributes[similarity.type][item.id].name
+      attribute_names = similarity.list.map (item) ->
+        graph.attributes[similarity.type][item.id].name
       "<span class=\"d3-tip-label\">#{type}:</span> #{attribute_names.join(', ')}"
     .join '<br>'
 
-  link_index: (d) ->
+  link_index = (d) ->
     "#{d.source.index}->#{d.target.index}"
 
   # link weight is determined by number of similarities between nodes
-  link_weight: (d) ->
-
-    @link_weight_cache = @link_weight_cache || {}
-    return @link_weight_cache[@link_index(d)] if @link_weight_cache[@link_index(d)]
+  link_weight_cache = {}
+  link_weight = (d) ->
+    return link_weight_cache[link_index(d)] if link_weight_cache[link_index(d)]
 
     weights = _.flatten d.similarities.map (similarity) ->
       similarity.list.map (item) ->
         item.weight
     total_weight = weights.reduce( (a, b) -> a + b )
 
-    @link_weight_cache[@link_index(d)] = total_weight
+    link_weight_cache[link_index(d)] = total_weight
 
 
   # link width is a modified log of the calculated link weight
-  link_width: (d) =>
-    Math.log( d3.max([2, @link_weight(d)]) )# * 5
+  link_width = (d) ->
+    Math.log( d3.max([2, link_weight(d)]) )# * 5
 
-  link_opacity: (d) =>
-    @link_opacity_cache = @link_opacity_cache || {}
-    return @link_opacity_cache[@link_index(d)] if @link_opacity_cache[@link_index(d)]
+  link_opacity_cache = {}
+  max_link_weight = undefined
+  link_opacity = (d) ->
+    link_opacity_cache = link_opacity_cache || {}
+    return link_opacity_cache[link_index(d)] if link_opacity_cache[link_index(d)]
 
-    @max_link_weight = @max_link_weight || d3.max( Object.keys(@link_weight_cache).map (key) => @link_weight_cache[key] )
-    calculated_weight = @link_weight(d) / @max_link_weight
+    max_link_weight = max_link_weight || d3.max( Object.keys(link_weight_cache).map (key) -> link_weight_cache[key] )
+    calculated_weight = link_weight(d) / max_link_weight
 
-    @link_opacity_cache[@link_index(d)] = calculated_weight
+    link_opacity_cache[link_index(d)] = calculated_weight
 
-  draw_link_by_buttons: (links) ->
+  node_tip_html: (d) ->
+    d.name
+
+  draw_link_by_buttons = (links) ->
     return if ScholarMapViz.$similarity_types.data('links-for') == @type
 
     ScholarMapViz.$similarity_types.css 'display', 'none'
@@ -347,19 +363,19 @@ class ScholarMapViz.Map
 
     for type in similarity_types
       formatted_type = type[0].toUpperCase() + type[1..-1]
-      ScholarMapViz.$similarity_types.data 'links-for', @type
+      ScholarMapViz.$similarity_types.data 'links-for', type
       ScholarMapViz.$similarity_types.append """
         <button class="btn btn-default btn-block active" data-similarity-type="#{type}">#{formatted_type}</button>
       """
 
     ScholarMapViz.$similarity_types.fadeIn 500
 
-  generate_links: (nodes) ->
-    links = nodes.map (node, index) =>
-      nodes.slice(index+1, nodes.length).map (other_node) =>
+  generate_links = (nodes) ->
+    links = nodes.map (node, index) ->
+      nodes.slice(index+1, nodes.length).map (other_node) ->
         similarities = {}
         any_links = false
-        for similarity_type in @active_similarity_types()
+        for similarity_type in active_similarity_types()
           similarities[similarity_type] = if node[similarity_type] and other_node[similarity_type]
             if node[similarity_type] and typeof(node[similarity_type][0]) == 'object'
               node_attr_ids       =       node[similarity_type].map (similarity) -> similarity.id
@@ -384,7 +400,7 @@ class ScholarMapViz.Map
           {
             source: nodes.indexOf node
             target: nodes.indexOf other_node
-            similarities: @active_similarity_types().map (similarity_type) ->
+            similarities: active_similarity_types().map (similarity_type) ->
               {
                 type: similarity_type
                 list: similarities[similarity_type]
@@ -397,13 +413,13 @@ class ScholarMapViz.Map
 
     _.compact _.flatten(links)
 
-  similarity_exclusions: ->
+  similarity_exclusions = ->
     $.makeArray( ScholarMapViz.$similarity_types.find('button:not(.active)') ).map (type) ->
       $(type).data 'similarity-type'
 
-  active_similarity_types: ->
-    @similarity_types().filter (type) =>
-      @similarity_exclusions().indexOf(type) < 0
+  active_similarity_types = ->
+    similarity_types().filter (type) ->
+      similarity_exclusions().indexOf(type) < 0
 
 
 class ScholarMapViz.PeopleMap extends ScholarMapViz.Map
@@ -414,10 +430,6 @@ class ScholarMapViz.PeopleMap extends ScholarMapViz.Map
 
   similarity_types: ->
     ['fields', 'methods', 'theories', 'venues', 'references']
-
-  # node tooltips should display people's name
-  node_tip_html: (d) ->
-    d.name
 
 
 class ScholarMapViz.ReferencesMap extends ScholarMapViz.Map
@@ -433,10 +445,6 @@ class ScholarMapViz.ReferencesMap extends ScholarMapViz.Map
   node_tip_html: (d) ->
     d.citation
 
-  # node size depends on the number of authors for the reference
-  node_size: (d) ->
-    d3.max [10, Math.log( d.authors.length + 1 ) * 10]
-
 
 class ScholarMapViz.CharacteristicsMap extends ScholarMapViz.Map
 
@@ -446,10 +454,6 @@ class ScholarMapViz.CharacteristicsMap extends ScholarMapViz.Map
 
   similarity_types: ->
     ['people', 'references']
-
-  # node tooltips should display the characteristic names
-  node_tip_html: (d) ->
-    d.name
 
 
 class ScholarMapViz.DataToggle
