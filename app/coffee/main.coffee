@@ -60,7 +60,6 @@ class ScholarMapViz.Map
   node_tip = undefined
   link_tip = undefined
   initialize_tooltips = ->
-    node_tip_html = @node_tip_html
 
     node_tip_direction = (override_this) ->
       element = if override_this instanceof SVGCircleElement then override_this else @
