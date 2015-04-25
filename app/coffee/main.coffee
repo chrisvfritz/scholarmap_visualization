@@ -113,14 +113,14 @@ class ScholarMapViz.Map
       .links graph.links
       .start()
 
-    setTimeout(->
+    setTimeout ->
       force.stop()
       # setTimeout(->
       #   node.fixed = true for node in @graph.nodes
       # , 100)
       $('.loader').removeClass 'loading'
       ScholarMapViz.$container.fadeIn 500
-    , 3000)
+    , 3000
 
     # sets up link hover area, with a minimum stroke-width
     # hover_link = @svg.selectAll '.hover-link'
@@ -181,14 +181,14 @@ class ScholarMapViz.Map
         .call force.drag
 
     # prevents nodes from spilling out the sides of the draw area
+    node_binding_x_cache = {}
     node_binding_x = (d) ->
-      node_binding_x_cache = node_binding_x_cache || {}
       return node_binding_x_cache[d.x] if node_binding_x_cache[d.x]
       node_binding_x_cache[d.x] = Math.max node_size(d), Math.min(width - node_size(d), d.x)
 
     # prevents nodes from spilling out the top or bottom of the draw area
+    node_binding_y_cache = {}
     node_binding_y = (d) ->
-      node_binding_y_cache = node_binding_y_cache || {}
       return node_binding_y_cache[d.y] if node_binding_y_cache[d.y]
       node_binding_y_cache[d.y] = Math.max node_size(d), Math.min(height - node_size(d), d.y)
 
