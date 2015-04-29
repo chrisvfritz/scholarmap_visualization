@@ -165,16 +165,29 @@ class ScholarMapViz.Map
             set_related_links_status d, 'active'
           ), 1
         .on 'click', (d) ->
-          $('#node-title').html node_tip_html(d)
-          $('#node-url').attr 'href', d.relative_url
-          $node_attrs = $('#node-attrs').html ''
-          for key of d
-            continue if key in ['name', 'citation', 'relative_url']
-            break    if key == 'index' or key in similarity_types()
-            $node_attrs.append """
-              <h4>#{key[0].toUpperCase() + key[1..-1]}</h4>
-              <p>#{if typeof(d[key]) == 'object' then d[key].join(', ') else d[key]}</p>
+          # console.log $(d3.event.target).addClass 'selected'
+          unless d3.event.metaKey || d3.event.ctrlKey
+            graph.nodes.forEach (n) ->
+              n.selected = false
+          d.selected = true
+          selected_nodes = graph.nodes.filter (n) -> n.selected
+          d3.selectAll('.selected').attr 'class', (n) -> if n.selected then 'node selected' else 'node'
+          d3.select(@).attr 'class', (n) -> if n.selected then 'node selected' else 'node'
+          # d.attr 'class', 'node selected'
+          $('#node-title').html selected_nodes.map( (n) ->
             """
+              <a href="#{n.relative_url}">#{node_tip_html(n)}</a>
+            """
+          ).join(', ')
+          $node_attrs = $('#node-attrs').html ''
+          if selected_nodes.length == 1
+            for key of d
+              continue if key in ['name', 'citation', 'relative_url']
+              break    if key == 'index' or key in similarity_types()
+              $node_attrs.append """
+                <h4>#{key[0].toUpperCase() + key[1..-1]}</h4>
+                <p>#{if typeof(d[key]) == 'object' then d[key].join(', ') else d[key]}</p>
+              """
         .on 'mouseout', (d) ->
           node_tip.hide()
           set_related_links_status d, 'inactive'
@@ -281,7 +294,7 @@ class ScholarMapViz.Map
 
   # sizes nodes by combined link weights
   node_size = (d) ->
-    10
+    if d.selected then 20 else 10
 
     # @node_size_cache = @node_size_cache || {}
     # return @node_size_cache[d.index] if @node_size_cache[d.index]

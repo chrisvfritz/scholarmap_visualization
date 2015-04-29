@@ -92,6 +92,10 @@ body {
   stroke-width: 3px;
 }
 
+.node.selected {
+  stroke-width: 10px;
+}
+
 .visible-link {
   stroke: #999;
   /*stroke-opacity: 1;*/
