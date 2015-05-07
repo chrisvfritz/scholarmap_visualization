@@ -89,7 +89,7 @@ body {
   stroke-width: 70;
   stroke-linejoin: round;
   opacity: .15;
-  pointer-events: none;
+  /*pointer-events: none;*/
 }
 
 .node-background {

@@ -232,13 +232,10 @@ class ScholarMapViz.Map
         .style 'stroke', group_fill
         .style 'stroke-width', 50
         .on 'click', (d) ->
-          # graph.nodes.forEach (n) ->
-          #   n.selected = false
-          # console.log d
-          # d.selected = true
-          # d3.selectAll('.selected').attr 'class', (n) -> if n.selected then 'node selected' else 'node'
-          # d3.select(@).attr 'class', (n) -> if n.selected then 'node selected' else 'node'
-          # refresh_selected_nodes()
+          graph.nodes.forEach (n) ->
+            n.selected = n in d.values
+          d3.selectAll('.node').attr 'class', (n) -> if n.selected then 'node selected' else 'node'
+          refresh_selected_nodes()
 
     # constantly redraws the graph, with the following items
     force.on 'tick', ->
