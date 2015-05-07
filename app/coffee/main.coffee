@@ -95,7 +95,9 @@ class ScholarMapViz.Map
 
   graph = undefined
   get_data: ->
-    return bind_data() if graph && graph.type == data_type
+    if graph
+      node.fixed = false for node in graph.nodes
+      return bind_data() if graph.type == data_type
     # fetch data of the appropriate type from the API
     d3.json "http://somelab09.cci.fsu.edu:8080/scholarMap/api/v1/#{data_type}/graphs/force-directed?#{window.location.search.substring(1)}", (error, data) ->
       graph = data
@@ -233,10 +235,11 @@ class ScholarMapViz.Map
         .style 'stroke', group_fill
         .style 'stroke-width', 50
         .on 'click', (d) ->
-          graph.nodes.forEach (n) ->
-            n.selected = n in d.values
-          d3.selectAll('.node').attr 'class', (n) -> if n.selected then 'node selected' else 'node'
-          refresh_selected_nodes()
+          unless d3.event.metaKey || d3.event.ctrlKey
+            graph.nodes.forEach (n) ->
+              n.selected = n in d.values
+            d3.selectAll('.node').attr 'class', (n) -> if n.selected then 'node selected' else 'node'
+            refresh_selected_nodes()
 
     # constantly redraws the graph, with the following items
     force.on 'tick', ->
@@ -431,11 +434,12 @@ class ScholarMapViz.Map
     ScholarMapViz.$similarity_types.fadeIn 500
 
   generate_links = (nodes) ->
+    active_types = active_similarity_types()
     links = _.map nodes, (node, index) ->
       _.slice(nodes, index+1, nodes.length).map (other_node) ->
         similarities = {}
         any_links = false
-        for similarity_type in active_similarity_types()
+        for similarity_type in active_types
           similarities[similarity_type] = if node[similarity_type] and other_node[similarity_type]
             if node[similarity_type] and typeof(node[similarity_type][0]) == 'object'
               node_attr_ids       = _.map       node[similarity_type], (similarity) -> similarity.id
@@ -460,7 +464,7 @@ class ScholarMapViz.Map
           {
             source: nodes.indexOf node
             target: nodes.indexOf other_node
-            similarities: _.filter _.map( active_similarity_types(), (similarity_type) ->
+            similarities: _.filter _.map( active_types, (similarity_type) ->
               {
                 type: similarity_type
                 list: similarities[similarity_type]
@@ -538,8 +542,8 @@ class ScholarMapViz.LinkTypeToggles
   constructor: ->
     ScholarMapViz.$similarity_types.on 'click', 'input[type="checkbox"]', ->
       $this = $(@)
-      if ScholarMapViz.$similarity_types.find('input:checked').length == 1 && $this.prop('checked')
-        $this.prop 'checked', !$this.prop('checked')
+      if ScholarMapViz.$similarity_types.find('input:checked').length == 0
+        $this.prop 'checked', true
       else
         ScholarMapViz.current_map.link_weight_cache = {}
         ScholarMapViz.current_map.draw()
