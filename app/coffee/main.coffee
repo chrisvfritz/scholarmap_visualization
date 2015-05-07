@@ -411,22 +411,21 @@ class ScholarMapViz.Map
     d.name
 
   draw_link_by_buttons = (links) ->
-    return if ScholarMapViz.$similarity_types.data('links-for') == @type
+    return if ScholarMapViz.$similarity_types.data('links-for') == data_type
+    ScholarMapViz.$similarity_types.data 'links-for', data_type
 
     ScholarMapViz.$similarity_types.css 'display', 'none'
-
-    similarity_types = []
-    for link in links
-      for similarity in link.similarities
-        similarity_types.push(similarity.type) unless similarity_types.indexOf(similarity.type) > -1
-
     ScholarMapViz.$similarity_types.html ''
 
-    for type in similarity_types
+    for type in similarity_types()
       formatted_type = type[0].toUpperCase() + type[1..-1]
-      ScholarMapViz.$similarity_types.data 'links-for', type
       ScholarMapViz.$similarity_types.append """
-        <button class="btn btn-default btn-block active" data-similarity-type="#{type}">#{formatted_type}</button>
+        <div class="checkbox">
+          <label>
+            <input type="checkbox" data-similarity-type="#{type}" value="#{type}" checked>
+            #{formatted_type}
+          </label>
+        </div>
       """
 
     ScholarMapViz.$similarity_types.fadeIn 500
@@ -475,8 +474,8 @@ class ScholarMapViz.Map
     _.compact _.flatten(links)
 
   similarity_exclusions = ->
-    $.makeArray( ScholarMapViz.$similarity_types.find('button:not(.active)') ).map (type) ->
-      $(type).data 'similarity-type'
+    $.makeArray( ScholarMapViz.$similarity_types.find('input[type="checkbox"]:not(:checked)') ).map (type) ->
+      type.value
 
   active_similarity_types = ->
     similarity_types().filter (type) ->
@@ -537,9 +536,11 @@ class ScholarMapViz.DataToggle
 class ScholarMapViz.LinkTypeToggles
 
   constructor: ->
-    ScholarMapViz.$similarity_types.on 'click', 'button', ->
-      unless ScholarMapViz.$similarity_types.find('button.active').length == 1 && $(@).hasClass('active')
-        $(@).toggleClass 'active'
+    ScholarMapViz.$similarity_types.on 'click', 'input[type="checkbox"]', ->
+      $this = $(@)
+      if ScholarMapViz.$similarity_types.find('input:checked').length == 1 && $this.prop('checked')
+        $this.prop 'checked', !$this.prop('checked')
+      else
         ScholarMapViz.current_map.link_weight_cache = {}
         ScholarMapViz.current_map.draw()
 
