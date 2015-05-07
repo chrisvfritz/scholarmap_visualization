@@ -101,6 +101,7 @@ class ScholarMapViz.Map
       graph = data
       bind_data()
 
+  selected_nodes = []
   bind_data = ->
 
     graph.links = generate_links graph.nodes
@@ -119,7 +120,9 @@ class ScholarMapViz.Map
       #   node.fixed = true for node in @graph.nodes
       # , 100)
       $('.loader').removeClass 'loading'
-      ScholarMapViz.$container.fadeIn 500
+      ScholarMapViz.$container.fadeIn 500, ->
+        for node in graph.nodes
+          node.fixed = true
     , 3000
 
     # sets up link hover area, with a minimum stroke-width
@@ -165,7 +168,6 @@ class ScholarMapViz.Map
             set_related_links_status d, 'active'
           ), 1
         .on 'click', (d) ->
-          # console.log $(d3.event.target).addClass 'selected'
           unless d3.event.metaKey || d3.event.ctrlKey
             graph.nodes.forEach (n) ->
               n.selected = false
@@ -250,8 +252,9 @@ class ScholarMapViz.Map
           .style 'fill', group_fill
           .style 'stroke', group_fill
           .style 'stroke-width', (d) ->
-            d3.max d.values.map( (p) -> node_size(p) * 2 + 20 )
+            d3.max 40 # d.values.map( (p) -> node_size(p) * 2 + 20 )
           .attr 'd', group_path
+          .on 'click', (d) ->
 
       # the hover areas around links to show tooltips
       # hover_link
