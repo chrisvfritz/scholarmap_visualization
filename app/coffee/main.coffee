@@ -115,14 +115,12 @@ class ScholarMapViz.Map
       .start()
 
     setTimeout ->
-      force.stop()
-      # setTimeout(->
-      #   node.fixed = true for node in @graph.nodes
-      # , 100)
+      node.fixed = true for node in graph.nodes
+      setTimeout(->
+        force.stop()
+      , 50)
       $('.loader').removeClass 'loading'
-      ScholarMapViz.$container.fadeIn 500, ->
-        for node in graph.nodes
-          node.fixed = true
+      ScholarMapViz.$container.fadeIn 500
     , 3000
 
     # sets up link hover area, with a minimum stroke-width
@@ -144,6 +142,7 @@ class ScholarMapViz.Map
     visible_link = svg.selectAll '.visible-link'
       .data graph.links
       .enter().append 'line'
+        .attr 'data-id', (d) -> "#{d.source.index}->#{d.target.index}"
         .attr 'class', 'visible-link'
         .style 'stroke-width', 2 # @link_width
         .style 'opacity', link_opacity
@@ -172,24 +171,9 @@ class ScholarMapViz.Map
             graph.nodes.forEach (n) ->
               n.selected = false
           d.selected = true
-          selected_nodes = graph.nodes.filter (n) -> n.selected
           d3.selectAll('.selected').attr 'class', (n) -> if n.selected then 'node selected' else 'node'
           d3.select(@).attr 'class', (n) -> if n.selected then 'node selected' else 'node'
-          # d.attr 'class', 'node selected'
-          $('#node-title').html selected_nodes.map( (n) ->
-            """
-              <a href="#{n.relative_url}">#{node_tip_html(n)}</a>
-            """
-          ).join(', ')
-          $node_attrs = $('#node-attrs').html ''
-          if selected_nodes.length == 1
-            for key of d
-              continue if key in ['name', 'citation', 'relative_url']
-              break    if key == 'index' or key in similarity_types()
-              $node_attrs.append """
-                <h4>#{key[0].toUpperCase() + key[1..-1]}</h4>
-                <p>#{if typeof(d[key]) == 'object' then d[key].join(', ') else d[key]}</p>
-              """
+          refresh_selected_nodes()
         .on 'mouseout', (d) ->
           node_tip.hide()
           set_related_links_status d, 'inactive'
@@ -240,21 +224,28 @@ class ScholarMapViz.Map
         for link in connected_links
           set_link_status link, status
 
+    hulls = svg.selectAll 'path'
+      .data groups
+      .enter().insert 'path', 'circle'
+        .attr 'class', 'node-group'
+        .style 'fill', group_fill
+        .style 'stroke', group_fill
+        .style 'stroke-width', 50
+        .on 'click', (d) ->
+          # graph.nodes.forEach (n) ->
+          #   n.selected = false
+          # console.log d
+          # d.selected = true
+          # d3.selectAll('.selected').attr 'class', (n) -> if n.selected then 'node selected' else 'node'
+          # d3.select(@).attr 'class', (n) -> if n.selected then 'node selected' else 'node'
+          # refresh_selected_nodes()
+
     # constantly redraws the graph, with the following items
-    force.on 'tick', (e) ->
+    force.on 'tick', ->
 
       # the hulls surrounding node groups
-      svg.selectAll 'path'
-        .data groups
+      hulls
         .attr 'd', group_path
-        .enter().insert 'path', 'circle'
-          .attr 'class', 'node-group'
-          .style 'fill', group_fill
-          .style 'stroke', group_fill
-          .style 'stroke-width', (d) ->
-            d3.max 40 # d.values.map( (p) -> node_size(p) * 2 + 20 )
-          .attr 'd', group_path
-          .on 'click', (d) ->
 
       # the hover areas around links to show tooltips
       # hover_link
@@ -269,7 +260,6 @@ class ScholarMapViz.Map
         .attr 'y1', (d) -> node_binding_y d.source
         .attr 'x2', (d) -> node_binding_x d.target
         .attr 'y2', (d) -> node_binding_y d.target
-        .attr 'data-id', (d) -> "#{d.source.index}->#{d.target.index}"
 
       # the background of nodes (so that transparency doesn't reveal link tips)
       # node_background
@@ -280,6 +270,64 @@ class ScholarMapViz.Map
       node
         .attr 'cx', node_binding_x
         .attr 'cy', node_binding_y
+
+  refresh_selected_nodes = ->
+    selected_nodes = graph.nodes.filter (n) -> n.selected
+    $('#node-title').html selected_nodes.map( (n) ->
+      """
+        <a href="#{n.relative_url}">#{node_tip_html(n)}</a>
+      """
+    ).join(', ')
+    $node_attrs = $('#node-attrs').html ''
+    return if selected_nodes.length == 0
+    if selected_nodes.length == 1
+      for key of selected_nodes[0]
+        continue if key in ['name', 'citation', 'relative_url']
+        break    if key == 'index' or key in similarity_types()
+        $node_attrs.append """
+          <h4>#{key[0].toUpperCase() + key[1..-1]}</h4>
+          <p>#{if typeof(selected_nodes[0][key]) == 'object' then d[key].join(', ') else selected_nodes[0][key]}</p>
+        """
+    similarity_matrix = {}
+    # Get counts for attributes
+    for type in similarity_types()
+      similarity_matrix[type] = {}
+      for node in selected_nodes
+        if node[type]
+          for id in node[type]
+            if similarity_matrix[type][id]
+              similarity_matrix[type][id] += 1
+            else
+              similarity_matrix[type][id] = 1
+    # Delete counts when only one exists (and multiple are selected)
+    # Also delete types when none exist
+    for type of similarity_matrix
+      unless selected_nodes.length == 1
+        for id of similarity_matrix[type]
+          delete similarity_matrix[type][id] if similarity_matrix[type][id] == 1
+      delete similarity_matrix[type] if Object.keys(similarity_matrix[type]).length == 0
+    # Add shared attributes to sidebar
+    generate_type_color = d3.scale.category10()
+    for type of similarity_matrix
+      # Generate a type color
+      type_color = d3.rgb generate_type_color(type)
+      # Append the heading
+      $node_attrs.append """
+        <h4>#{type[0].toUpperCase() + type[1..-1]}</h4>
+      """
+      # Sort types into an array by count
+      type_similarity_array = []
+      for id of similarity_matrix[type]
+        type_similarity_array.push _.extend graph.attributes[type][id],
+          count: similarity_matrix[type][id]
+      type_similarity_array = _.sortBy type_similarity_array, (similarity) -> -similarity.count
+      # Append all the similarities
+      for similarity in type_similarity_array
+        $node_attrs.append """
+          <span style="background:#{type_color.darker(similarity.count-1).toString()};" class="node-attribute">
+            <a href="#{similarity.relative_url}">#{similarity.name}</a>
+          </span>
+        """
 
   # calculates communities with the Louvain algorithm
   louvain_communities = ->
@@ -386,16 +434,16 @@ class ScholarMapViz.Map
     ScholarMapViz.$similarity_types.fadeIn 500
 
   generate_links = (nodes) ->
-    links = nodes.map (node, index) ->
-      nodes.slice(index+1, nodes.length).map (other_node) ->
+    links = _.map nodes, (node, index) ->
+      _.slice(nodes, index+1, nodes.length).map (other_node) ->
         similarities = {}
         any_links = false
         for similarity_type in active_similarity_types()
           similarities[similarity_type] = if node[similarity_type] and other_node[similarity_type]
             if node[similarity_type] and typeof(node[similarity_type][0]) == 'object'
-              node_attr_ids       =       node[similarity_type].map (similarity) -> similarity.id
-              other_node_attr_ids = other_node[similarity_type].map (similarity) -> similarity.id
-              similarities[similarity_type] = _.intersection(node_attr_ids, other_node_attr_ids).map (id) ->
+              node_attr_ids       = _.map       node[similarity_type], (similarity) -> similarity.id
+              other_node_attr_ids = _.map other_node[similarity_type], (similarity) -> similarity.id
+              similarities[similarity_type] = _.map _.intersection(node_attr_ids, other_node_attr_ids), (id) ->
                 node_attr_weight       = _.find(       node[similarity_type], (item) -> item.id == id ).weight
                 other_node_attr_weight = _.find( other_node[similarity_type], (item) -> item.id == id ).weight
                 {
@@ -405,7 +453,7 @@ class ScholarMapViz.Map
             else
               node_attr_ids       =       node[similarity_type]
               other_node_attr_ids = other_node[similarity_type]
-              similarities[similarity_type] = _.intersection(node_attr_ids, other_node_attr_ids).map (id) ->
+              similarities[similarity_type] = _.map _.intersection(node_attr_ids, other_node_attr_ids), (id) ->
                 id: id
                 weight: 50
           else
@@ -415,12 +463,12 @@ class ScholarMapViz.Map
           {
             source: nodes.indexOf node
             target: nodes.indexOf other_node
-            similarities: active_similarity_types().map (similarity_type) ->
+            similarities: _.filter _.map( active_similarity_types(), (similarity_type) ->
               {
                 type: similarity_type
                 list: similarities[similarity_type]
               }
-            .filter (similarity) ->
+            ), (similarity) ->
               similarity.list.length > 0
           }
         else

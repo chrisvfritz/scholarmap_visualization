@@ -3,7 +3,7 @@
  ******/
 
 body {
-  padding: 0 300px 0 350px;
+  padding: 0 350px;
   position: relative;
   background: white;
   color: #555;
@@ -23,7 +23,7 @@ body {
 }
 
 #right-sidebar {
-  width: 300px;
+  width: 350px;
   right: 0;
 }
 
@@ -63,6 +63,22 @@ body {
 
 #node-title {
   margin-top: 0;
+}
+
+.node-attribute {
+  display: inline-block;
+  padding: 3px 6px;
+  margin-right: 4px;
+  margin-bottom: 4px;
+  border-radius: 2px;
+}
+
+.node-attribute a {
+  color: #efefef;
+}
+
+.node-attribute a:hover {
+  color: #fff;
 }
 
 /***********
