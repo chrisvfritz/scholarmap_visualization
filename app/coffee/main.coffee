@@ -95,10 +95,11 @@ class ScholarMapViz.Map
 
   graph = undefined
   get_data: ->
-    return bind_data() if graph
+    return bind_data() if graph && graph.type == data_type
     # fetch data of the appropriate type from the API
     d3.json "http://somelab09.cci.fsu.edu:8080/scholarMap/api/v1/#{data_type}/graphs/force-directed?#{window.location.search.substring(1)}", (error, data) ->
       graph = data
+      graph.type = data_type
       bind_data()
 
   selected_nodes = []
@@ -283,7 +284,7 @@ class ScholarMapViz.Map
         break    if key == 'index' or key in similarity_types()
         $node_attrs.append """
           <h4>#{key[0].toUpperCase() + key[1..-1]}</h4>
-          <p>#{if typeof(selected_nodes[0][key]) == 'object' then d[key].join(', ') else selected_nodes[0][key]}</p>
+          <p>#{if typeof(selected_nodes[0][key]) == 'object' then selected_nodes[0][key].join(', ') else selected_nodes[0][key]}</p>
         """
     similarity_matrix = {}
     # Get counts for attributes
@@ -503,6 +504,7 @@ class ScholarMapViz.ReferencesMap extends ScholarMapViz.Map
 
   # node tooltips should display the reference citation
   node_tip_html: (d) ->
+    console.log d
     d.citation
 
 
