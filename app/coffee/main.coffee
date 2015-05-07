@@ -182,6 +182,19 @@ class ScholarMapViz.Map
           set_related_links_status d, 'inactive'
         .call force.drag
 
+    $node_search = $('#node-search')
+    $node_search.unbind()
+    $node_search.on 'keyup', _.debounce( ->
+      search = @.value
+      node.selected = false for node in graph.nodes
+      unless search == ''
+        results = _.filter graph.nodes, (n) -> (new RegExp(search,'i')).test node_tip_html(n)
+        result.selected = true for result in results
+      d3.selectAll('.node').attr 'class', (n) -> if n.selected then 'node selected' else 'node'
+      refresh_selected_nodes()
+      console.log results
+    , 500)
+
     # prevents nodes from spilling out the sides of the draw area
     node_binding_x_cache = {}
     node_binding_x = (d) ->
