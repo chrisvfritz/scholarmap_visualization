@@ -44,17 +44,15 @@ class ScholarMapViz.Map
   initialize_force_layout = ->
     force = d3.layout.force()
       .size [width, height]
-      .linkDistance 50
-        # base     = 150
-        # grouping = if @group_by(d.source) == @group_by(d.target) then 40 else 0
-        # weight   = @link_weight(d) * 10
-        # base - grouping - weight
+      .linkDistance (d) ->
+        base     = 150
+        grouping = if group_by(d.source) == group_by(d.target) then 40 else 0
+        weight   = link_weight(d) * 10
+        base - grouping - weight
       .linkStrength (d) ->
         if group_by(d.source) == group_by(d.target) then 0.05 else .01
-      .charge (d) ->
-        # -9 * @node_size(d)
-        -200
-      .gravity 0.03
+      .charge -200
+      .gravity 0.3
 
   # https://github.com/Caged/d3-tip/blob/master/docs/index.md#d3tip-api-documetation
   node_tip = undefined
@@ -488,7 +486,8 @@ class ScholarMapViz.Map
         else
           null
 
-    _.compact _.flatten(links)
+    links = _.compact _.flatten(links)
+    _.sortBy( links, (link) -> -link_weight(link) )[0..500]
 
   similarity_exclusions = ->
     $.makeArray( ScholarMapViz.$similarity_types.find('input[type="checkbox"]:not(:checked)') ).map (type) ->
