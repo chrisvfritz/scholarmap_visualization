@@ -358,7 +358,7 @@ class ScholarMapViz.Map
 
   # sizes nodes by combined link weights
   node_size = (d) ->
-    if d.selected then 20 else 10
+    10
 
     # @node_size_cache = @node_size_cache || {}
     # return @node_size_cache[d.index] if @node_size_cache[d.index]
@@ -489,7 +489,7 @@ class ScholarMapViz.Map
           null
 
     links = _.compact _.flatten(links)
-    _.sortBy( links, (link) -> -link_weight(link) )[0..500]
+    _.sortBy( links, (link) -> -link_weight(link) )[0..Math.floor( graph.nodes.length * 3 )]
 
   similarity_exclusions = ->
     $.makeArray( ScholarMapViz.$similarity_types.find('input[type="checkbox"]:not(:checked)') ).map (type) ->
