@@ -342,14 +342,15 @@ class ScholarMapViz.Map
         """
 
   # calculates communities with the Louvain algorithm
+  louvain_communities_cache = undefined
   louvain_communities = ->
+    return louvain_communities_cache if louvain_communities_cache
     louvain_nodes = [0..graph.nodes.length]
     louvain_edges = graph.links.map (link) ->
       source: link.source.index,
       target: link.target.index,
       weight: link_weight(link)
-    communities = jLouvain().nodes(louvain_nodes).edges(louvain_edges)()
-    louvain_communities = -> communities
+    louvain_communities_cache = jLouvain().nodes(louvain_nodes).edges(louvain_edges)()
 
   # groups by Louvain communities
   group_by = (d) ->
@@ -445,6 +446,7 @@ class ScholarMapViz.Map
     ScholarMapViz.$similarity_types.fadeIn 500
 
   generate_links = (nodes) ->
+    louvain_communities_cache = undefined
     active_types = active_similarity_types()
     links = _.map nodes, (node, index) ->
       _.slice(nodes, index+1, nodes.length).map (other_node) ->
