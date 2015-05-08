@@ -81,6 +81,14 @@ body {
   color: #fff;
 }
 
+#similarity-types {
+  display: inline-block;
+}
+
+#similarity-types .checkbox {
+  text-align:left;
+}
+
 /***********
  GENERAL VIZ
  ***********/
