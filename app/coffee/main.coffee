@@ -115,6 +115,7 @@ class ScholarMapViz.Map
       .links graph.links
       .start()
 
+    # pre-renders the graph, then freezes the nodes
     setTimeout ->
       node.fixed = true for node in graph.nodes
       setTimeout(->
