@@ -37,7 +37,7 @@ class ScholarMapViz.Map
   # https://github.com/mbostock/d3/wiki/Ordinal-Scales#categorical-colors
   color = undefined
   set_colors = ->
-    color = d3.scale.category10();
+    color = d3.scale.category20()
 
   # https://github.com/mbostock/d3/wiki/Force-Layout
   force = undefined
