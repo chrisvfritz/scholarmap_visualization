@@ -135,6 +135,11 @@ body {
   stroke: transparent;
 }
 
+.label {
+  /*display: none;*/
+  pointer-events: none;
+}
+
 /***********
  D3 TOOLTIPS
  ***********/

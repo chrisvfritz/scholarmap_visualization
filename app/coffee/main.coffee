@@ -94,7 +94,7 @@ class ScholarMapViz.Map
   graph = undefined
   get_data: ->
     if graph
-      node.fixed = false for node in graph.nodes
+      n.fixed = false for n in graph.nodes
       return bind_data() if graph.type == data_type
     # fetch data of the appropriate type from the API
     d3.json "http://somelab09.cci.fsu.edu:8080/scholarMap/api/v1/#{data_type}/graphs/force-directed?#{window.location.search.substring(1)}", (error, data) ->
@@ -117,7 +117,7 @@ class ScholarMapViz.Map
 
     # pre-renders the graph, then freezes the nodes
     setTimeout ->
-      node.fixed = true for node in graph.nodes
+      n.fixed = true for n in graph.nodes
       setTimeout(->
         force.stop()
       , 50)
@@ -157,41 +157,47 @@ class ScholarMapViz.Map
     #     .attr 'r', @node_size
 
     # sets up node style and behavior
-    node = svg.selectAll '.node'
+    node_wrapper = svg.selectAll '.node'
       .data graph.nodes
-      .enter().append 'circle'
-        .attr 'class', 'node'
-        .attr 'r', node_size
-        .style 'fill', (d) -> color group_by(d)
-        .on 'mouseover', node_tip.show
-        .on 'mouseenter', (d) ->
-          setTimeout (->
-            set_related_links_status d, 'active'
-          ), 1
-        .on 'click', (d) ->
-          unless d3.event.metaKey || d3.event.ctrlKey
-            graph.nodes.forEach (n) ->
-              n.selected = false
-          d.selected = true
-          d3.selectAll('.selected').attr 'class', (n) -> if n.selected then 'node selected' else 'node'
-          d3.select(@).attr 'class', (n) -> if n.selected then 'node selected' else 'node'
-          refresh_selected_nodes()
-        .on 'mouseout', (d) ->
-          node_tip.hide()
-          set_related_links_status d, 'inactive'
-        .call force.drag
+
+    node = node_wrapper.enter().append 'circle'
+      .attr 'class', 'node'
+      .attr 'r', node_size
+      .style 'fill', (d) -> color group_by(d)
+      .on 'mouseover', node_tip.show
+      .on 'mouseenter', (d) ->
+        setTimeout (->
+          set_related_links_status d, 'active'
+        ), 1
+      .on 'click', (d) ->
+        unless d3.event.metaKey || d3.event.ctrlKey
+          graph.nodes.forEach (n) ->
+            n.selected = false
+        d.selected = true
+        d3.selectAll('.selected').attr 'class', (n) -> if n.selected then 'node selected' else 'node'
+        d3.select(@).attr 'class', (n) -> if n.selected then 'node selected' else 'node'
+        refresh_selected_nodes()
+      .on 'mouseout', (d) ->
+        node_tip.hide()
+        set_related_links_status d, 'inactive'
+      .call force.drag
+
+    label = node_wrapper.enter().append 'text'
+      .attr 'class', 'label'
+      .attr 'text-anchor', 'middle'
+      .style 'display', 'none'
+      .text (d) -> d.name
 
     $node_search = $('#node-search')
     $node_search.unbind()
     $node_search.on 'keyup', _.debounce( ->
       search = @.value
-      node.selected = false for node in graph.nodes
+      n.selected = false for n in graph.nodes
       unless search == ''
         results = _.filter graph.nodes, (n) -> (new RegExp(search,'i')).test node_tip_html(n)
         result.selected = true for result in results
-      d3.selectAll('.node').attr 'class', (n) -> if n.selected then 'node selected' else 'node'
+      d3.selectAll('.node').attr 'class', (d) -> if d.selected then 'node selected' else 'node'
       refresh_selected_nodes()
-      console.log results
     , 500)
 
     # prevents nodes from spilling out the sides of the draw area
@@ -232,9 +238,9 @@ class ScholarMapViz.Map
       $active_link.attr 'class', $active_link.attr('class') + " state-#{status}"
 
     # sets a state-SOMETHING class on visible links related to a node
-    set_related_links_status = (d, status) ->
+    set_related_links_status = (current_node, status) ->
       connected_links = graph.links.filter (link) ->
-        link.source.index == d.index || link.target.index == d.index
+        link.source.index == current_node.index || link.target.index == current_node.index
       if connected_links.length > 0
         for link in connected_links
           set_link_status link, status
@@ -284,12 +290,42 @@ class ScholarMapViz.Map
         .attr 'cx', node_binding_x
         .attr 'cy', node_binding_y
 
+      label
+        .attr 'dx', node_binding_x
+        .attr 'dy', (d) -> node_binding_y(d) - 12
+
   refresh_selected_nodes = ->
-    selected_nodes = graph.nodes.filter (n) -> n.selected
-    $('#node-title').html selected_nodes.map( (n) ->
+    selected_nodes = graph.nodes
+      .filter (n) -> n.selected
+      .sort (a,b) ->
+        return -1 if node_tip_html(a) < node_tip_html(b)
+        return 1  if node_tip_html(a) > node_tip_html(b)
+        0
+
+    if selected_nodes.length > 0
+      $('.node.selected').css 'opacity', 1
+      $('.node:not(.selected)').css 'opacity', 0.5
+    else
+      $('.node').css 'opacity', 1
+
+    if selected_nodes.length is 1
+      related_to_selected = (d) ->
+        for link in graph.links
+          return true if link.source is selected_nodes[0] and link.target is d
+          return true if link.target is selected_nodes[0] and link.source is d
+        false
+      d3.selectAll('.label').style 'display', (d) ->
+        if d.selected or related_to_selected(d) then 'block' else 'none'
+    else
+      d3.selectAll('.label').style 'display', (d) ->
+        if d.selected then 'block' else 'none'
+
+    $('#node-title').html selected_nodes.map( (n, i) ->
       """
-        <a href="#{n.relative_url}">#{node_tip_html(n)}</a>
-      """
+        #{if i is 5 then '<button class="btn btn-xs btn-primary">more</button><div style="display: none;">' else ''}
+        <a href="#{n.relative_url}">#{node_tip_html n}</a>
+        #{if i is selected_nodes.length - 1 then '</div>' else ''}
+      """.replace /^\s+|\s+$/g, ''
     ).join(', ')
     $node_attrs = $('#node-attrs').html ''
     return if selected_nodes.length == 0
@@ -305,9 +341,9 @@ class ScholarMapViz.Map
     # Get counts for attributes
     for type in similarity_types()
       similarity_matrix[type] = {}
-      for node in selected_nodes
-        if node[type]
-          for id in node[type]
+      for n in selected_nodes
+        if n[type]
+          for id in n[type]
             if similarity_matrix[type][id]
               similarity_matrix[type][id] += 1
             else
@@ -335,12 +371,18 @@ class ScholarMapViz.Map
           count: similarity_matrix[type][id]
       type_similarity_array = _.sortBy type_similarity_array, (similarity) -> -similarity.count
       # Append all the similarities
-      for similarity in type_similarity_array
-        $node_attrs.append """
+      attributes_html = ''
+      for similarity, i in type_similarity_array
+        attributes_html += """
+          #{if i is 5 then '<button class="btn btn-xs btn-primary">more</button><div style="display: none;">' else ''}
           <span style="background:#{type_color.darker(similarity.count-1).toString()};" class="node-attribute">
             <a href="#{similarity.relative_url}">#{similarity.name}</a>
           </span>
-        """
+          #{if i is type_similarity_array.length - 1 then '</div>' else ''}
+        """.replace /^\s+|\s+$/g, ''
+      $node_attrs.append """
+        <div>#{attributes_html}</div>
+      """
 
   # calculates communities with the Louvain algorithm
   louvain_communities_cache = undefined
@@ -449,24 +491,24 @@ class ScholarMapViz.Map
   generate_links = (nodes) ->
     louvain_communities_cache = undefined
     active_types = active_similarity_types()
-    links = _.map nodes, (node, index) ->
+    links = _.map nodes, (n, index) ->
       _.slice(nodes, index+1, nodes.length).map (other_node) ->
         similarities = {}
         any_links = false
         for similarity_type in active_types
-          similarities[similarity_type] = if node[similarity_type] and other_node[similarity_type]
-            if node[similarity_type] and typeof(node[similarity_type][0]) == 'object'
-              node_attr_ids       = _.map       node[similarity_type], (similarity) -> similarity.id
+          similarities[similarity_type] = if n[similarity_type] and other_node[similarity_type]
+            if n[similarity_type] and typeof(n[similarity_type][0]) == 'object'
+              node_attr_ids       = _.map       n[similarity_type], (similarity) -> similarity.id
               other_node_attr_ids = _.map other_node[similarity_type], (similarity) -> similarity.id
               similarities[similarity_type] = _.map _.intersection(node_attr_ids, other_node_attr_ids), (id) ->
-                node_attr_weight       = _.find(       node[similarity_type], (item) -> item.id == id ).weight
+                node_attr_weight       = _.find(       n[similarity_type], (item) -> item.id == id ).weight
                 other_node_attr_weight = _.find( other_node[similarity_type], (item) -> item.id == id ).weight
                 {
                   id: id
                   weight: (node_attr_weight + other_node_attr_weight) / 2
                 }
             else
-              node_attr_ids       =       node[similarity_type]
+              node_attr_ids       =       n[similarity_type]
               other_node_attr_ids = other_node[similarity_type]
               similarities[similarity_type] = _.map _.intersection(node_attr_ids, other_node_attr_ids), (id) ->
                 id: id
@@ -476,7 +518,7 @@ class ScholarMapViz.Map
           any_links = true if similarities[similarity_type].length > 0
         if any_links
           {
-            source: nodes.indexOf node
+            source: nodes.indexOf n
             target: nodes.indexOf other_node
             similarities: _.filter _.map( active_types, (similarity_type) ->
               {
@@ -522,8 +564,7 @@ class ScholarMapViz.ReferencesMap extends ScholarMapViz.Map
 
   # node tooltips should display the reference citation
   node_tip_html: (d) ->
-    console.log d
-    d.citation
+    "#{d.authors.split(',')[0]} #{d.year}"
 
 
 class ScholarMapViz.CharacteristicsMap extends ScholarMapViz.Map
@@ -579,6 +620,13 @@ class ScholarMapViz.Initializer
     ScholarMapViz.$container = $(ScholarMapViz.container)
 
     ScholarMapViz.$similarity_types = $('#similarity-types')
+
+    $('body').on 'click', 'button:contains(more)', ->
+      $button = $(@)
+      $container = $button.parent()
+      $hidden_items = $container.find(':hidden')
+      $hidden_items.replaceWith $hidden_items.html()
+      $button.remove()
 
   fetch_default_data: ->
     ScholarMapViz.current_map = new ScholarMapViz.PeopleMap
