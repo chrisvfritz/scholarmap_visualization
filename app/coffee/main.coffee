@@ -320,13 +320,12 @@ class ScholarMapViz.Map
       d3.selectAll('.label').style 'display', (d) ->
         if d.selected then 'block' else 'none'
 
-    $('#node-title').html selected_nodes.map( (n, i) ->
+    $('#node-title').html '<div class="expandable">' + selected_nodes.map( (n, i) ->
       """
-        #{if i is 5 then '<button class="btn btn-xs btn-primary">more</button><div style="display: none;">' else ''}
+        #{if i is 5 then '<span class="break-point"></span>' else ''}
         <a href="#{n.relative_url}">#{node_tip_html n}</a>
-        #{if i is selected_nodes.length - 1 then '</div>' else ''}
       """.replace /^\s+|\s+$/g, ''
-    ).join(', ')
+    ).join(', ') + '</div>'
     $node_attrs = $('#node-attrs').html ''
     return if selected_nodes.length == 0
     if selected_nodes.length == 1
@@ -374,15 +373,24 @@ class ScholarMapViz.Map
       attributes_html = ''
       for similarity, i in type_similarity_array
         attributes_html += """
-          #{if i is 5 then '<button class="btn btn-xs btn-primary">more</button><div style="display: none;">' else ''}
+          #{if i is 5 then '<span class="break-point"></span>' else ''}
           <span style="background:#{type_color.darker(similarity.count-1).toString()};" class="node-attribute">
             <a href="#{similarity.relative_url}">#{similarity.name}</a>
           </span>
-          #{if i is type_similarity_array.length - 1 then '</div>' else ''}
         """.replace /^\s+|\s+$/g, ''
       $node_attrs.append """
-        <div>#{attributes_html}</div>
+        <div class="expandable">#{attributes_html}</div>
       """
+
+    $('.expandable').expander
+      slicePoint: 999
+      sliceOn: '<span class="break-point"></span>'
+      expandPrefix: ' '
+      expandText: '<button class="btn btn-primary btn-xs">more</button>'
+      userCollapsePrefix: ' '
+      userCollapseText: '<button class="btn btn-primary btn-xs">less</button>'
+      expandEffect: 'fadeIn'
+      collapseEffect: 'fadeOut'
 
   # calculates communities with the Louvain algorithm
   louvain_communities_cache = undefined
@@ -620,13 +628,6 @@ class ScholarMapViz.Initializer
     ScholarMapViz.$container = $(ScholarMapViz.container)
 
     ScholarMapViz.$similarity_types = $('#similarity-types')
-
-    $('body').on 'click', 'button:contains(more)', ->
-      $button = $(@)
-      $container = $button.parent()
-      $hidden_items = $container.find(':hidden')
-      $hidden_items.replaceWith $hidden_items.html()
-      $button.remove()
 
   fetch_default_data: ->
     ScholarMapViz.current_map = new ScholarMapViz.PeopleMap

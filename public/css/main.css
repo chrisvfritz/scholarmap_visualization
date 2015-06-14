@@ -73,12 +73,24 @@ body {
   border-radius: 2px;
 }
 
+.node-attribute.extra {
+  display: none;
+}
+
 .node-attribute a {
   color: #efefef;
 }
 
 .node-attribute a:hover {
   color: #fff;
+}
+
+.expandable > .node-attribute:nth-child(5) {
+  margin-right: 0;
+}
+
+.details > .node-attribute:nth-last-child(2) {
+  margin-right: 0;
 }
 
 #similarity-types {
