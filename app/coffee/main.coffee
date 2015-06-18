@@ -125,21 +125,6 @@ class ScholarMapViz.Map
       ScholarMapViz.$container.fadeIn 500
     , 3000
 
-    # sets up link hover area, with a minimum stroke-width
-    # hover_link = @svg.selectAll '.hover-link'
-    #   .data @graph.links
-    #   .enter().append 'line'
-    #     .attr 'class', 'hover-link'
-    #     .style 'stroke-width', (d) => d3.max [ 15, @link_width(d) ]
-    #     .on 'mouseover', @link_tip.show
-    #     .on 'mouseenter', (d) ->
-    #       setTimeout (->
-    #         set_link_status d, 'active'
-    #       ), 1
-    #     .on 'mouseout', (d) =>
-    #       @link_tip.hide()
-    #       set_link_status d, 'inactive'
-
     # sets up link styles
     visible_link = svg.selectAll '.visible-link'
       .data graph.links
@@ -148,13 +133,6 @@ class ScholarMapViz.Map
         .attr 'class', 'visible-link'
         .style 'stroke-width', 2 # @link_width
         .style 'opacity', link_opacity
-
-    # sets up node background, so that transparency doesn't reveal link tips
-    # node_background = @svg.selectAll '.node-background'
-    #   .data @graph.nodes
-    #   .enter().append 'circle'
-    #     .attr 'class', 'node-background'
-    #     .attr 'r', @node_size
 
     # sets up node style and behavior
     node_wrapper = svg.selectAll '.node'
@@ -408,23 +386,8 @@ class ScholarMapViz.Map
     louvain_communities()[d.index]
 
   # sizes nodes by combined link weights
-  node_size = (d) ->
+  node_size = ->
     10
-
-    # @node_size_cache = @node_size_cache || {}
-    # return @node_size_cache[d.index] if @node_size_cache[d.index]
-
-    # connected_links = @graph.links.filter (link) ->
-    #   link.source.index == d.index || link.target.index == d.index
-
-    # return 0 if connected_links.length == 0
-
-    # calculated_node_size = connected_links.map (link) =>
-    #   @link_weight(link)
-    # .reduce (a, b) =>
-    #   a + b
-
-    # @node_size_cache[d.index] = d3.max [ Math.sqrt(calculated_node_size), 10 ]
 
   # returns all original node attributes (not including generated attributes)
   node_attributes = (nodes) ->
